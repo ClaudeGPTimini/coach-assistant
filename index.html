@@ -278,10 +278,10 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
 /* ========== PORTRAIT MODE ========== */
 @media (orientation: portrait) {
-  #main-area { display: flex; flex-direction: column; flex: none; }
-  #field-container { order: 1; flex: none; height: 45vh; padding: 4px; }
-  #bench-bar { order: 2; }
-  #sidebar { order: 3; }
+  #main-area { display: flex; flex-direction: column; flex: 1; min-height: 0; }
+  #field-container { order: 1; flex: 1; min-height: 0; padding: 4px; }
+  #bench-bar { order: 2; flex: none; }
+  #sidebar { order: 3; flex: none; }
   /* Show only our half of the field */
   #field-inner { width: 200%; }
   #field-inner.flipped { transform: translateX(-50%); }
