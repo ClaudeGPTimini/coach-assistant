@@ -831,7 +831,7 @@ function selectFieldPlayer(pos) {
 function selectBenchPlayer(idx) {
   if (previewQuarter !== null) return;
   if (swapMode) { onSwapModeTap('bench', idx); return; }
-  if (state.absent.includes(idx)) { toggleAbsent(idx); return; }
+  if (state.absent && state.absent.includes(idx)) { toggleAbsent(idx); return; }
   if (selectedPlayer && selectedPlayer.type === 'bench' && selectedPlayer.key === idx) { clearSelection(); return; }
   if (selectedPlayer) { doSwap(selectedPlayer, { type: 'bench', key: idx }); return; }
   selectedPlayer = { type: 'bench', key: idx }; render();
@@ -893,7 +893,7 @@ function renderBench() {
   state.players.forEach((player, idx) => {
     if (Object.values(state.assignments).includes(idx)) return;
     const el = document.createElement('div'); el.className = 'bench-player';
-    if (state.absent.includes(idx)) el.classList.add('absent');
+    if (state.absent && state.absent.includes(idx)) el.classList.add('absent');
     if (!swapMode && selectedPlayer && selectedPlayer.type === 'bench' && selectedPlayer.key === idx) el.classList.add('selected');
     if (swapMode) {
       if (swapFirstPick && swapFirstPick.type === 'bench' && swapFirstPick.key === idx) el.classList.add('swap-pick');
