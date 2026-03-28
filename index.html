@@ -538,7 +538,7 @@ firebase.initializeApp(firebaseConfig);
 const db = firebase.database();
 const dbRef = db.ref('gameState');
 let firebaseReady = false;
-let ignoreNextFirebaseUpdate = false;
+let firebaseIgnoreCount = 0;
 
 const POSITIONS = ['G','LD','RD','LW','RW','M'];
 const DEFAULT_PRESETS = [
@@ -592,13 +592,13 @@ function loadState() {
 function saveState() {
   localStorage.setItem('soccer-coach-state', JSON.stringify(state));
   // Sync to Firebase
-  ignoreNextFirebaseUpdate = true;
+  firebaseIgnoreCount++;
   dbRef.set(state).catch(e => console.warn('Firebase save error:', e));
 }
 
 // Listen for remote changes from Firebase
 dbRef.on('value', (snapshot) => {
-  if (ignoreNextFirebaseUpdate) { ignoreNextFirebaseUpdate = false; return; }
+  if (firebaseIgnoreCount > 0) { firebaseIgnoreCount--; return; }
   const data = snapshot.val();
   if (data && data.players) {
     state = data;
@@ -1077,11 +1077,10 @@ function computeSwaps(cur, next) {
   return lines;
 }
 
-function applySubs() { if (!pendingSubs) return; currentQuarter = pendingSubs.nextQ; applyLineup(pendingSubs.nextLineup); closeSubs(); renderQuarters(); }
+function applySubs() { if (!pendingSubs) return; currentQuarter = pendingSubs.nextQ; applyLineup(pendingSubs.nextLineup); closeSubs(); saveState(); render(); }
 function applyLineup(lineup) {
   state.assignments = {};
   POSITIONS.forEach(pos => { if (lineup[pos] != null && lineup[pos] !== '') state.assignments[pos] = lineup[pos]; });
-  saveState(); render();
 }
 function closeSubs() { pendingSubs = null; document.getElementById('subs-overlay').classList.remove('open'); }
 
@@ -1512,7 +1511,12 @@ function saveGamePlan() {
 }
 
 function loadGamePlanSettings(idx) { loadGamePlanByIdx(idx); closeSettings(); }
-function deleteGamePlan(idx) { if (state.activeGamePlan === idx) state.activeGamePlan = null; else if (state.activeGamePlan != null && state.activeGamePlan > idx) state.activeGamePlan--; state.gamePlans.splice(idx, 1); saveState(); renderGamePlansUI(); }
+function deleteGamePlan(idx) {
+  const planName = state.gamePlans[idx] ? state.gamePlans[idx].name : 'this plan';
+  if (!confirm('Delete "' + planName + '"? This cannot be undone.')) return;
+  if (state.activeGamePlan === idx) state.activeGamePlan = null; else if (state.activeGamePlan != null && state.activeGamePlan > idx) state.activeGamePlan--;
+  state.gamePlans.splice(idx, 1); saveState(); renderGamePlansUI();
+}
 
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
 function escAttr(s) { return s.replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;'); }
