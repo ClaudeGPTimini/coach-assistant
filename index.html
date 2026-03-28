@@ -287,7 +287,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   #field-inner.flipped { transform: translateX(-50%); }
   #flip-btn { font-size: 10px; padding: 2px 8px; }
 
-  #sidebar { width: 100%; flex: none; flex-direction: row; border-left: none; border-top: 2px solid #0f3460; padding: 0; overflow: hidden; }
+  #sidebar { width: 100%; max-width: none; flex: none; flex-direction: row; border-left: none; border-top: 2px solid #0f3460; padding: 0; overflow: visible; }
   #sidebar-normal { flex-direction: row; flex-wrap: nowrap; align-items: stretch; gap: 0; }
   #sidebar-swap { flex-direction: row; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center; padding: 6px 8px; }
 
@@ -301,7 +301,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   #preset-buttons { display: none; }
 
   /* Control buttons: fill group width, compact */
-  .sidebar-btn { padding: 7px 6px; font-size: 12px; text-align: center; }
+  .sidebar-btn { padding: 6px 4px; font-size: 12px; text-align: center; }
 
   #quarter-left, #quarter-right { gap: 2px; }
   .quarter-btn { padding: 6px 8px; font-size: 12px; }
