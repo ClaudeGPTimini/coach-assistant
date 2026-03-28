@@ -109,6 +109,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 /* Normal sidebar content */
 #sidebar-normal { display: flex; flex-direction: column; gap: 4px; flex: 1; }
 #sidebar-swap { display: none; flex-direction: column; gap: 4px; flex: 1; }
+.sb-group { display: flex; flex-direction: column; gap: 4px; }
 #sidebar-swap.active { display: flex; }
 #sidebar-normal.hidden { display: none; }
 #swap-header { font-size: 11px; font-weight: 700; color: #f39c12; text-align: center; text-transform: uppercase; letter-spacing: 1px; padding: 2px 0; }
@@ -286,9 +287,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
   #field-inner.flipped { transform: translateX(-50%); }
   #flip-btn { font-size: 10px; padding: 2px 8px; }
 
-  #sidebar { width: 100%; flex: none; flex-direction: row; flex-wrap: wrap; border-left: none; border-top: 2px solid #0f3460; padding: 6px 8px; gap: 4px; align-items: center; justify-content: center; overflow-y: auto; }
-  #sidebar-normal { flex-direction: row; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center; }
-  #sidebar-swap { flex-direction: row; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center; }
+  #sidebar { width: 100%; flex: none; flex-direction: row; border-left: none; border-top: 2px solid #0f3460; padding: 0; overflow: hidden; }
+  #sidebar-normal { flex-direction: row; flex-wrap: nowrap; align-items: stretch; justify-content: space-around; gap: 0; }
+  #sidebar-swap { flex-direction: row; flex-wrap: wrap; gap: 4px; align-items: center; justify-content: center; padding: 6px 8px; }
+  .sb-group { flex: 1; flex-direction: column; align-items: center; justify-content: center; gap: 5px; padding: 6px 4px; border-right: 1px solid #1a3a6a; }
+  .sb-group:last-child { border-right: none; }
+  #sb-spacer { display: none; }
+  #preset-buttons { justify-content: center; }
   #quarter-left, #quarter-right { gap: 2px; }
   .quarter-btn { padding: 6px 8px; font-size: 12px; }
   #timer-display { font-size: 28px; padding: 0 8px; }
@@ -363,14 +368,20 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     </div>
     <div id="sidebar">
       <div id="sidebar-normal">
-        <div id="timer-display">00:00</div>
-        <div id="preset-buttons"></div>
-        <button id="start-btn" class="sidebar-btn" onclick="toggleTimer()">START</button>
-        <button id="reset-btn" class="sidebar-btn" onclick="resetTimer()">RESET</button>
-        <div style="flex:1"></div>
-        <button id="swap-btn" class="sidebar-btn" onclick="toggleSwapMode()">SWAP</button>
-        <button id="plan-btn" class="sidebar-btn" onclick="cyclePlan()">NO PLAN</button>
-        <button id="settings-btn" class="sidebar-btn" onclick="openSettings()">⚙</button>
+        <div class="sb-group">
+          <div id="timer-display">00:00</div>
+          <div id="preset-buttons"></div>
+        </div>
+        <div class="sb-group">
+          <button id="start-btn" class="sidebar-btn" onclick="toggleTimer()">START</button>
+          <button id="reset-btn" class="sidebar-btn" onclick="resetTimer()">RESET</button>
+        </div>
+        <div id="sb-spacer" style="flex:1"></div>
+        <div class="sb-group">
+          <button id="swap-btn" class="sidebar-btn" onclick="toggleSwapMode()">SWAP</button>
+          <button id="plan-btn" class="sidebar-btn" onclick="cyclePlan()">NO PLAN</button>
+          <button id="settings-btn" class="sidebar-btn" onclick="openSettings()">⚙</button>
+        </div>
       </div>
       <div id="sidebar-swap">
         <div id="swap-header">PLAN SWAP</div>
