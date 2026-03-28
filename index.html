@@ -575,6 +575,7 @@ function loadState() {
     const s = JSON.parse(localStorage.getItem('soccer-coach-state'));
     if (s && s.players) {
       if (!s.gamePlans) s.gamePlans = [];
+      if (!s.absent) s.absent = [];
       if (s.activeGamePlan === undefined) s.activeGamePlan = null;
       if (!s.swapPresets) s.swapPresets = [];
       const migrated = {};
@@ -603,7 +604,9 @@ dbRef.on('value', (snapshot) => {
   if (data && data.players) {
     state = data;
     if (!state.gamePlans) state.gamePlans = [];
+    if (!state.absent) state.absent = [];
     if (!state.swapPresets) state.swapPresets = [];
+    if (!state.assignments) state.assignments = {};
     if (state.activeGamePlan === undefined) state.activeGamePlan = null;
     localStorage.setItem('soccer-coach-state', JSON.stringify(state));
     if (firebaseReady) render();
