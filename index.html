@@ -575,14 +575,15 @@ const DEFAULT_ROSTER = ['Emma','Corissa','Eliza','Avery','Lotte','Everlee','Char
 let flipped = false;
 let state = loadState();
 let timerInterval = null, timerRunning = false, timerSeconds = 0, timerCountUp = false, selectedPreset = -1;
-let selectedPlayer = null, currentQuarter = 0, pendingSubs = null, editingPlanIdx = -1;
+let selectedPlayer = null, currentQuarter = (state.currentQuarter || 0), pendingSubs = null, editingPlanIdx = -1;
 let swapMode = false, plannedSwaps = [], swapFirstPick = null;
 
 function defaultState() {
   return {
     players: DEFAULT_ROSTER.map(n => ({ name: n, position: '' })),
     presets: DEFAULT_PRESETS.map(p => ({...p})),
-    assignments: {}, absent: [], gamePlans: [], activeGamePlan: null, swapPresets: []
+    assignments: {}, absent: [], gamePlans: [], activeGamePlan: null, swapPresets: [],
+    currentQuarter: 0
   };
 }
 
@@ -594,6 +595,7 @@ function loadState() {
       if (!s.absent) s.absent = [];
       if (s.activeGamePlan === undefined) s.activeGamePlan = null;
       if (!s.swapPresets) s.swapPresets = [];
+      if (s.currentQuarter === undefined) s.currentQuarter = 0;
       const migrated = {};
       Object.keys(s.assignments || {}).forEach(k => {
         const nk = k === 'GK' ? 'G' : k === 'Mid' ? 'M' : k;
@@ -624,6 +626,8 @@ dbRef.on('value', (snapshot) => {
     if (!state.swapPresets) state.swapPresets = [];
     if (!state.assignments) state.assignments = {};
     if (state.activeGamePlan === undefined) state.activeGamePlan = null;
+    if (state.currentQuarter === undefined) state.currentQuarter = 0;
+    currentQuarter = state.currentQuarter;
     localStorage.setItem('soccer-coach-state', JSON.stringify(state));
     if (firebaseReady) render();
   }
@@ -991,7 +995,7 @@ function setQuarter(q) {
   }
 
   // No plan - just switch quarter label
-  currentQuarter = q; renderQuarters();
+  currentQuarter = q; state.currentQuarter = q; saveState(); renderQuarters();
 }
 
 function enterPreview(q) {
@@ -1030,7 +1034,7 @@ function exitPreview() {
 
 function applyPreview() {
   if (previewQuarter === null) return;
-  currentQuarter = previewQuarter;
+  currentQuarter = previewQuarter; state.currentQuarter = currentQuarter;
   savedAssignments = null; // discard - we're keeping the preview lineup
   previewQuarter = null;
   document.getElementById('preview-banner').classList.remove('active');
@@ -1096,7 +1100,7 @@ function computeSwaps(cur, next) {
   return lines;
 }
 
-function applySubs() { if (!pendingSubs) return; currentQuarter = pendingSubs.nextQ; applyLineup(pendingSubs.nextLineup); closeSubs(); saveState(); render(); }
+function applySubs() { if (!pendingSubs) return; currentQuarter = pendingSubs.nextQ; state.currentQuarter = currentQuarter; applyLineup(pendingSubs.nextLineup); closeSubs(); saveState(); render(); }
 function applyLineup(lineup) {
   state.assignments = {};
   POSITIONS.forEach(pos => { if (lineup[pos] != null && lineup[pos] !== '') state.assignments[pos] = lineup[pos]; });
@@ -1112,7 +1116,7 @@ function cyclePlan() {
 function loadGamePlanByIdx(idx) {
   // Exit preview if active
   if (previewQuarter !== null) { previewQuarter = null; savedAssignments = null; document.getElementById('preview-banner').classList.remove('active'); document.getElementById('preview-actions').classList.remove('active'); document.getElementById('field').style.borderColor = ''; }
-  state.activeGamePlan = idx; currentQuarter = 0;
+  state.activeGamePlan = idx; currentQuarter = 0; state.currentQuarter = 0;
   const plan = state.gamePlans[idx];
   if (plan && plan.quarters && plan.quarters.Q1) applyLineup(plan.quarters.Q1);
   saveState(); render();
