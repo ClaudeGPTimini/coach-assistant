@@ -1755,25 +1755,34 @@ function genId() { return Date.now().toString(36) + Math.random().toString(36).s
 
 function todayIso() { return new Date().toISOString().slice(0, 10); }
 
-function snapshotLineupForToday() {
-  // Build {Q1: {pos: name}, ...} from the active game plan; fall back to current assignments at Q-current.
+function snapshotLineupFromPlan(planIdx) {
   const out = {};
   const idxToName = i => (i != null && state.players[i]) ? state.players[i].name : null;
-  if (state.activeGamePlan != null && state.gamePlans[state.activeGamePlan]) {
-    const plan = state.gamePlans[state.activeGamePlan];
-    for (let q = 1; q <= 4; q++) {
-      const qd = (plan.quarters && plan.quarters['Q' + q]) || {};
-      const lineup = {};
-      POSITIONS.forEach(p => { const n = idxToName(qd[p]); if (n) lineup[p] = n; });
-      if (Object.keys(lineup).length) out['Q' + q] = lineup;
-    }
-  }
-  if (Object.keys(out).length === 0) {
+  const plan = state.gamePlans[planIdx];
+  if (!plan) return out;
+  for (let q = 1; q <= 4; q++) {
+    const qd = (plan.quarters && plan.quarters['Q' + q]) || {};
     const lineup = {};
-    POSITIONS.forEach(p => { const n = idxToName(state.assignments[p]); if (n) lineup[p] = n; });
-    out['Q' + (currentQuarter + 1)] = lineup;
+    POSITIONS.forEach(p => { const n = idxToName(qd[p]); if (n) lineup[p] = n; });
+    if (Object.keys(lineup).length) out['Q' + q] = lineup;
   }
   return out;
+}
+
+function snapshotLineupFromCurrentField() {
+  const out = {};
+  const idxToName = i => (i != null && state.players[i]) ? state.players[i].name : null;
+  const lineup = {};
+  POSITIONS.forEach(p => { const n = idxToName(state.assignments[p]); if (n) lineup[p] = n; });
+  out['Q' + (currentQuarter + 1)] = lineup;
+  return out;
+}
+
+function defaultLineupSnapshot() {
+  if (state.activeGamePlan != null && state.gamePlans[state.activeGamePlan]) {
+    return snapshotLineupFromPlan(state.activeGamePlan);
+  }
+  return snapshotLineupFromCurrentField();
 }
 
 function renderGameLogUI() {
@@ -1875,7 +1884,7 @@ function openGameLogForm(editId) {
     opponentName: '',
     score: { us: 0, them: 0 },
     scorers: [],
-    quarters: snapshotLineupForToday(),
+    quarters: defaultLineupSnapshot(),
     notes: ''
   };
   document.getElementById('game-log-title').textContent = editId ? 'Edit Game' : 'Log a Game';
@@ -1930,8 +1939,39 @@ function renderGameLogForm() {
       <button onclick="gameLogAdjScore('them',1)">+</button>
     </div></div>`;
   html += `<div class="gl-row" style="align-items:flex-start"><label>Scorers</label><div class="gl-scorers-list" style="flex:1">${scorerRows}</div></div>`;
+
+  // Lineup picker + preview
+  const planOpts = state.gamePlans.map((p, i) => `<option value="plan:${i}">${escHtml(p.name)}</option>`).join('');
+  html += `<div class="gl-row"><label>Lineup from</label>
+    <select onchange="gameLogSetLineupSource(this.value)">
+      <option value="">— keep saved snapshot —</option>
+      ${planOpts}
+      <option value="field">Current field</option>
+    </select></div>`;
+  // Preview of the captured lineup
+  const qkeys = Object.keys(d.quarters || {}).sort();
+  if (qkeys.length) {
+    let preview = '<div class="gl-detail-section" style="background:#0f1a30;padding:6px 8px;border-radius:5px;margin-left:76px"><div class="gl-detail-label">Captured lineup</div>';
+    qkeys.forEach(qk => {
+      const lineup = d.quarters[qk];
+      const parts = POSITIONS.map(p => `${p}: ${escHtml(lineup[p] || '—')}`).join(' · ');
+      preview += `<div class="gl-quarter-row"><b>${qk}</b>: ${parts}</div>`;
+    });
+    preview += '</div>';
+    html += preview;
+  } else {
+    html += `<div style="margin-left:76px;color:#888;font-size:11px;font-style:italic">No lineup captured. Pick a Game Plan above.</div>`;
+  }
+
   html += `<div class="gl-row" style="align-items:flex-start"><label>Notes</label><textarea oninput="gameLogDraft.notes=this.value" placeholder="How'd it go?">${escHtml(d.notes || '')}</textarea></div>`;
   body.innerHTML = html;
+}
+
+function gameLogSetLineupSource(val) {
+  if (!val) return; // keep existing snapshot
+  if (val === 'field') gameLogDraft.quarters = snapshotLineupFromCurrentField();
+  else if (val.startsWith('plan:')) gameLogDraft.quarters = snapshotLineupFromPlan(parseInt(val.slice(5)));
+  renderGameLogForm();
 }
 
 function gameLogSetOpponent(val) {
