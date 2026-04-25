@@ -179,6 +179,8 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .gp-bench-chip { background: #0f1a30; border: 1px solid #0f3460; color: #ccc; padding: 4px 10px; border-radius: 12px; font-size: 11px; cursor: pointer; user-select: none; transition: background 0.15s, box-shadow 0.15s; }
 .gp-bench-chip:active { background: rgba(255,255,255,0.05); }
 .gp-bench-chip.gp-swap-selected { background: rgba(231,76,60,0.25); box-shadow: 0 0 0 2px #e74c3c; }
+.gp-bench-out { background: #16213e; border: 1px dashed #3498db; color: #8ab4d8; padding: 4px 12px; border-radius: 6px; font-size: 11px; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; cursor: pointer; user-select: none; }
+.gp-bench-out.gp-in-midswap { background: rgba(52,152,219,0.18); color: #3498db; border-style: solid; }
 .gp-swap-hint { font-size: 10px; color: #666; text-align: center; margin-top: 6px; font-style: italic; }
 .gp-swap-lines { position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; z-index: 2; }
 .gp-cell.gp-in-midswap { box-shadow: 0 0 0 1px rgba(243,156,18,0.4); background: rgba(243,156,18,0.08); }
@@ -510,7 +512,9 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <div class="gp-name-row">
           <input type="text" id="gp-name" placeholder="Plan name" style="background:#16213e;border:1px solid #0f3460;color:#fff;padding:5px 8px;border-radius:5px;font-size:13px">
           <button class="gp-btn gp-save" onclick="saveGamePlan()">Save</button>
+          <button class="gp-btn gp-load" onclick="saveGamePlanAsNew()">Save As New</button>
         </div>
+        <div id="gp-save-toast" style="font-size:11px;color:#27ae60;font-weight:600;text-align:right;margin-top:-4px;margin-bottom:6px;opacity:0;transition:opacity .3s;min-height:14px"></div>
         <div id="gp-quarters"></div>
       </div>
     </div>
@@ -587,6 +591,24 @@ function defaultState() {
   };
 }
 
+// Normalize legacy {a,b} swap entries to {from,to,kind:'swap'} across game plans + presets.
+function normalizeMoveData(s) {
+  if (!s) return;
+  (s.gamePlans || []).forEach(plan => {
+    Object.values(plan.quarters || {}).forEach(q => {
+      if (q && Array.isArray(q._swaps)) {
+        q._swaps = q._swaps.map(sw => sw.from ? sw : { from: sw.a, to: sw.b, kind: 'swap' }).filter(sw => sw.from && sw.to);
+      }
+    });
+  });
+  (s.swapPresets || []).forEach(p => {
+    if (Array.isArray(p.pairs) && !p.items) {
+      p.items = p.pairs.map(pair => ({ from: pair[0], to: pair[1], kind: 'swap' }));
+      delete p.pairs;
+    }
+  });
+}
+
 function loadState() {
   try {
     const s = JSON.parse(localStorage.getItem('soccer-coach-state'));
@@ -602,6 +624,7 @@ function loadState() {
         migrated[nk] = s.assignments[k];
       });
       s.assignments = migrated;
+      normalizeMoveData(s);
       return s;
     }
   } catch(e) {}
@@ -627,6 +650,7 @@ dbRef.on('value', (snapshot) => {
     if (!state.assignments) state.assignments = {};
     if (state.activeGamePlan === undefined) state.activeGamePlan = null;
     if (state.currentQuarter === undefined) state.currentQuarter = 0;
+    normalizeMoveData(state);
     currentQuarter = state.currentQuarter;
     localStorage.setItem('soccer-coach-state', JSON.stringify(state));
     if (firebaseReady) render();
@@ -660,8 +684,8 @@ function loadPlanSwapsForCurrentQuarter() {
   if (!qd || !qd._swaps || !qd._swaps.length) return;
   plannedSwaps = [];
   qd._swaps.forEach(s => {
-    if (s.a && s.b) {
-      plannedSwaps.push({ a: { ...s.a }, b: { ...s.b } });
+    if (s.from && s.to) {
+      plannedSwaps.push({ from: { ...s.from }, to: { ...s.to }, kind: s.kind || 'swap' });
     }
   });
 }
@@ -724,7 +748,10 @@ function onSwapPresetSelect(sel) {
   sel.value = '';
 }
 
-function describeSwapPair(swap) { return getSwapPickName(swap.a) + ' ↔ ' + getSwapPickName(swap.b); }
+function describeSwapPair(swap) {
+  const arrow = swap.kind === 'move' ? ' → ' : ' ↔ ';
+  return getSwapPickName(swap.from) + arrow + getSwapPickName(swap.to);
+}
 
 function getSwapPickName(pick) {
   if (pick.type === 'field') {
@@ -732,20 +759,21 @@ function getSwapPickName(pick) {
     const name = (idx !== undefined && state.players[idx]) ? state.players[idx].name : '?';
     return name + ' (' + pick.key + ')';
   }
+  if (pick.type === 'benchOut') return 'Bench';
   return state.players[pick.key] ? state.players[pick.key].name + ' (bench)' : '?';
 }
 
 function isInPlannedSwap(type, key) {
-  return plannedSwaps.some(s => (s.a.type === type && s.a.key === key) || (s.b.type === type && s.b.key === key));
+  return plannedSwaps.some(s => (s.from.type === type && s.from.key === key) || (s.to.type === type && s.to.key === key));
 }
 
 function onSwapModeTap(type, key) {
-  const existingIdx = plannedSwaps.findIndex(s => (s.a.type === type && s.a.key === key) || (s.b.type === type && s.b.key === key));
+  const existingIdx = plannedSwaps.findIndex(s => (s.from.type === type && s.from.key === key) || (s.to.type === type && s.to.key === key));
   if (existingIdx >= 0) { removeSwapPair(existingIdx); return; }
   if (!swapFirstPick) { swapFirstPick = { type, key }; render(); renderSwapSidebar(); return; }
   if (swapFirstPick.type === 'bench' && type === 'bench') { swapFirstPick = { type, key }; render(); renderSwapSidebar(); return; }
   if (swapFirstPick.type === type && swapFirstPick.key === key) { swapFirstPick = null; render(); renderSwapSidebar(); return; }
-  plannedSwaps.push({ a: swapFirstPick, b: { type, key } });
+  plannedSwaps.push({ from: swapFirstPick, to: { type, key }, kind: 'swap' });
   swapFirstPick = null; render(); renderSwapSidebar();
 }
 
@@ -754,29 +782,42 @@ function clearSwapPlan() { plannedSwaps = []; swapFirstPick = null; render(); re
 
 function executeSwaps() {
   if (plannedSwaps.length === 0) return;
-  plannedSwaps.forEach(swap => doSwapDirect(swap.a, swap.b));
+  plannedSwaps.forEach(m => applyMove(m));
   plannedSwaps = []; swapFirstPick = null;
   swapMode = false;
   updateSwapModeUI();
   saveState(); render();
 }
 
-function doSwapDirect(sel1, sel2) {
-  if (sel1.type === 'field' && sel2.type === 'field') {
-    const tmp = state.assignments[sel1.key]; state.assignments[sel1.key] = state.assignments[sel2.key]; state.assignments[sel2.key] = tmp;
-  } else if (sel1.type === 'field' && sel2.type === 'bench') {
-    state.assignments[sel1.key] = sel2.key;
-  } else if (sel1.type === 'bench' && sel2.type === 'field') {
-    state.assignments[sel2.key] = sel1.key;
+// Apply one move (swap or one-way move) against state.assignments.
+// 'swap': exchange contents of the two slots.
+// 'move': player at `from` is placed at `to`; the `from` field slot becomes empty
+//         and any player previously at `to` is displaced (goes to bench).
+function applyMove(m) {
+  const from = m.from, to = m.to;
+  if (m.kind === 'move') {
+    let player = from.type === 'field' ? state.assignments[from.key] : from.key;
+    if (to.type === 'field') state.assignments[to.key] = player;
+    if (from.type === 'field') delete state.assignments[from.key];
+    // to.type === 'benchOut' or 'bench' just means the source player goes off-field; nothing to write.
+    return;
+  }
+  // swap (default)
+  if (from.type === 'field' && to.type === 'field') {
+    const tmp = state.assignments[from.key]; state.assignments[from.key] = state.assignments[to.key]; state.assignments[to.key] = tmp;
+  } else if (from.type === 'field' && to.type === 'bench') {
+    state.assignments[from.key] = to.key;
+  } else if (from.type === 'bench' && to.type === 'field') {
+    state.assignments[to.key] = from.key;
   }
 }
 
 function loadSwapPreset(idx) {
   const preset = state.swapPresets[idx]; if (!preset) return;
   plannedSwaps = []; swapFirstPick = null;
-  preset.pairs.forEach(pair => {
-    const a = parseSavedPick(pair[0]), b = parseSavedPick(pair[1]);
-    if (a && b) plannedSwaps.push({ a, b });
+  (preset.items || []).forEach(item => {
+    const from = parseSavedPick(item.from), to = parseSavedPick(item.to);
+    if (from && to) plannedSwaps.push({ from, to, kind: item.kind || 'swap' });
   });
   render(); renderSwapSidebar();
 }
@@ -795,7 +836,7 @@ function promptSaveSwap() {
 }
 function confirmSaveSwap() {
   const name = document.getElementById('save-swap-name').value.trim() || 'Swap ' + (state.swapPresets.length + 1);
-  state.swapPresets.push({ name, pairs: plannedSwaps.map(s => [serializePick(s.a), serializePick(s.b)]) });
+  state.swapPresets.push({ name, items: plannedSwaps.map(s => ({ from: serializePick(s.from), to: serializePick(s.to), kind: s.kind || 'swap' })) });
   saveState(); closeSaveSwap(); renderSwapSidebar();
 }
 function closeSaveSwap() { document.getElementById('save-swap-overlay').classList.remove('open'); }
@@ -808,12 +849,13 @@ function renderSwapLines() {
   if (!swapMode) return;
 
   plannedSwaps.forEach(swap => {
-    if (swap.a.type === 'field' && swap.b.type === 'field') {
-      const ca = getPosCoords(swap.a.key), cb = getPosCoords(swap.b.key);
+    if (swap.from.type === 'field' && swap.to.type === 'field') {
+      const ca = getPosCoords(swap.from.key), cb = getPosCoords(swap.to.key);
       const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
       line.setAttribute('x1', ca.x); line.setAttribute('y1', ca.y);
       line.setAttribute('x2', cb.x); line.setAttribute('y2', cb.y);
-      line.setAttribute('stroke', 'rgba(243,156,18,.6)');
+      const isMove = swap.kind === 'move';
+      line.setAttribute('stroke', isMove ? 'rgba(52,152,219,.75)' : 'rgba(243,156,18,.6)');
       line.setAttribute('stroke-width', '0.5');
       line.setAttribute('stroke-dasharray', '1.5,1');
       svg.appendChild(line);
@@ -1203,7 +1245,7 @@ function addPlayerRow() { state.players.push({ name: 'Player ' + (state.players.
 function removePlayer(idx) {
   Object.keys(state.assignments).forEach(pos => { if (state.assignments[pos] === idx) delete state.assignments[pos]; else if (state.assignments[pos] > idx) state.assignments[pos]--; });
   state.absent = state.absent.filter(i => i !== idx).map(i => i > idx ? i - 1 : i);
-  state.gamePlans.forEach(plan => { Object.keys(plan.quarters).forEach(qk => { const q = plan.quarters[qk]; POSITIONS.forEach(pos => { if (q[pos] === idx) q[pos] = null; else if (q[pos] > idx) q[pos]--; }); if (q._swaps) { q._swaps = q._swaps.filter(sw => { let keep = true; ['a','b'].forEach(side => { if (sw[side] && sw[side].type === 'bench') { if (sw[side].key === idx) keep = false; else if (sw[side].key > idx) sw[side].key--; } }); return keep; }); } }); });
+  state.gamePlans.forEach(plan => { Object.keys(plan.quarters).forEach(qk => { const q = plan.quarters[qk]; POSITIONS.forEach(pos => { if (q[pos] === idx) q[pos] = null; else if (q[pos] > idx) q[pos]--; }); if (q._swaps) { q._swaps = q._swaps.filter(sw => { let keep = true; ['from','to'].forEach(side => { if (sw[side] && sw[side].type === 'bench') { if (sw[side].key === idx) keep = false; else if (sw[side].key > idx) sw[side].key--; } }); return keep; }); } }); });
   state.players.splice(idx, 1); saveState(); renderSettingsPanel();
 }
 
@@ -1219,7 +1261,7 @@ function renderGamePlansUI() {
   state.gamePlans.forEach((plan, i) => { const r = document.createElement('div'); r.className = 'setting-row'; r.style.marginBottom = '8px'; const a = state.activeGamePlan === i; r.innerHTML = `<span style="flex:1;font-weight:600;${a ? 'color:#27ae60' : ''}">${escHtml(plan.name)} ${a ? '(Active)' : ''}</span><button class="gp-btn gp-load" onclick="loadGamePlanSettings(${i})">Load</button><button class="gp-btn gp-save" onclick="editGamePlan(${i})" style="background:#f39c12">Edit</button><button class="gp-btn gp-delete" onclick="deleteGamePlan(${i})">Del</button>`; ld.appendChild(r); });
 }
 function newGamePlan() {
-  editingPlanIdx = -1; gpEditQ = 1; gpFirstPick = null; gpSwapMode = false;
+  editingPlanIdx = -1; gpEditQ = 1; gpFirstPick = null; gpMoveMode = null;
   gpQuarters = {}; gpMidSwaps = {};
   for (let q = 1; q <= 4; q++) { gpQuarters['Q' + q] = {}; gpMidSwaps['Q' + q] = []; }
   document.getElementById('gp-name').value = 'Plan ' + String.fromCharCode(65 + state.gamePlans.length);
@@ -1227,7 +1269,7 @@ function newGamePlan() {
   renderPlanEditor();
 }
 function editGamePlan(idx) {
-  editingPlanIdx = idx; gpEditQ = 1; gpFirstPick = null; gpSwapMode = false;
+  editingPlanIdx = idx; gpEditQ = 1; gpFirstPick = null; gpMoveMode = null;
   gpQuarters = JSON.parse(JSON.stringify(state.gamePlans[idx].quarters || {}));
   gpMidSwaps = {};
   for (let q = 1; q <= 4; q++) {
@@ -1244,8 +1286,8 @@ function editGamePlan(idx) {
 let gpEditQ = 1;       // currently viewed quarter (1-4)
 let gpFirstPick = null; // { type: 'field'|'bench', key: pos|playerIdx } for first tap
 let gpQuarters = {};    // working copy: { Q1: { G: 0, LD: 1, ... }, Q2: ... }
-let gpMidSwaps = {};    // { Q1: [ {a:{type,key}, b:{type,key}}, ... ], Q2: ... }
-let gpSwapMode = false; // true when defining mid-quarter swap
+let gpMidSwaps = {};    // { Q1: [ {from:{type,key}, to:{type,key}, kind:'swap'|'move'}, ... ], Q2: ... }
+let gpMoveMode = null;  // null | 'swap' | 'move' — kind of arrow being placed
 
 function renderPlanEditor() {
   const c = document.getElementById('gp-quarters'); c.innerHTML = '';
@@ -1278,9 +1320,14 @@ function renderPlanEditor() {
   const prevLineup = gpEditQ > 1 ? (gpQuarters['Q' + (gpEditQ - 1)] || {}) : {};
 
   const midSwaps = gpMidSwaps[qk] || [];
-  // Build set of positions involved in mid-Q swaps for highlighting
+  // Build set of positions involved in mid-Q moves for highlighting
   const midSwapPositions = new Set();
-  midSwaps.forEach(s => { if (s.a.type === 'field') midSwapPositions.add(s.a.key); if (s.b.type === 'field') midSwapPositions.add(s.b.key); });
+  let benchOutInMidSwap = false;
+  midSwaps.forEach(s => {
+    if (s.from.type === 'field') midSwapPositions.add(s.from.key);
+    if (s.to.type === 'field') midSwapPositions.add(s.to.key);
+    if (s.to.type === 'benchOut' || s.from.type === 'benchOut') benchOutInMidSwap = true;
+  });
 
   const field = document.createElement('div');
   field.className = 'gp-field';
@@ -1324,7 +1371,15 @@ function renderPlanEditor() {
   const onField = new Set(Object.values(qd).filter(v => v != null));
   const benchPlayers = state.players.map((p, i) => ({ name: p.name, idx: i })).filter(p => !onField.has(p.idx));
   h += `<div class="gp-bench-area">`;
-  h += `<div class="gp-bench-label">Bench</div>`;
+  // The Bench label doubles as the "send to bench" drop target. Show the
+  // styled card whenever Move mode is active OR an existing arrow targets
+  // bench, so the arrow always has something to point to.
+  const showBenchOut = gpMoveMode === 'move' || benchOutInMidSwap;
+  if (showBenchOut) {
+    h += `<div class="gp-bench-label gp-bench-out${benchOutInMidSwap ? ' gp-in-midswap' : ''}" data-bench-out="1" onclick="gpTap('benchOut',null)">→ Bench</div>`;
+  } else {
+    h += `<div class="gp-bench-label">Bench</div>`;
+  }
   h += `<div class="gp-bench-grid">`;
   benchPlayers.forEach(p => {
     const isSelected = gpFirstPick && gpFirstPick.type === 'bench' && gpFirstPick.key === p.idx;
@@ -1334,8 +1389,10 @@ function renderPlanEditor() {
   h += `</div></div>`;
 
   // Hint text
-  if (gpSwapMode) {
-    h += `<div class="gp-swap-hint" style="color:#e74c3c">${gpFirstPick ? 'Tap second position for swap' : 'Tap two positions to add a swap'}</div>`;
+  if (gpMoveMode === 'swap') {
+    h += `<div class="gp-swap-hint" style="color:#f39c12">${gpFirstPick ? 'Tap the other slot to swap (↔)' : 'Tap two slots to add a swap (↔)'}</div>`;
+  } else if (gpMoveMode === 'move') {
+    h += `<div class="gp-swap-hint" style="color:#3498db">${gpFirstPick ? 'Tap destination for one-way move (→)' : 'Tap source then destination for a move (→)'}</div>`;
   } else {
     h += `<div class="gp-swap-hint">${gpFirstPick ? 'Tap a second position to swap' : 'Tap two positions to swap players'}</div>`;
   }
@@ -1343,25 +1400,36 @@ function renderPlanEditor() {
   field.innerHTML = h;
   c.appendChild(field);
 
-  // Mid-quarter swaps section
+  // Mid-quarter moves section
   const swapSection = document.createElement('div');
   swapSection.style.cssText = 'margin-top:6px';
   let swapHtml = '';
   if (midSwaps.length > 0) {
-    swapHtml += `<div style="font-size:10px;color:#f39c12;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Mid-Quarter Swaps</div>`;
+    swapHtml += `<div style="font-size:10px;color:#f39c12;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin-bottom:4px">Mid-Quarter Moves</div>`;
     midSwaps.forEach((sw, i) => {
-      const aName = sw.a.type === 'field' ? `${sw.a.key}: ${gpPlayerName(qd[sw.a.key])}` : gpPlayerName(sw.a.key) + ' (bench)';
-      const bName = sw.b.type === 'field' ? `${sw.b.key}: ${gpPlayerName(qd[sw.b.key])}` : gpPlayerName(sw.b.key) + ' (bench)';
-      swapHtml += `<div style="background:#3d2200;border-radius:6px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between">
-        <span style="font-size:11px;color:#f39c12;font-weight:600">${aName} ↔ ${bName}</span>
+      const pickName = (p) => {
+        if (p.type === 'field') return `${p.key}: ${gpPlayerName(qd[p.key])}`;
+        if (p.type === 'benchOut') return 'Bench';
+        return gpPlayerName(p.key) + ' (bench)';
+      };
+      const fromName = pickName(sw.from), toName = pickName(sw.to);
+      const isMove = sw.kind === 'move';
+      const arrow = isMove ? '→' : '↔';
+      const bg = isMove ? '#0e2a3d' : '#3d2200';
+      const fg = isMove ? '#3498db' : '#f39c12';
+      swapHtml += `<div style="background:${bg};border-radius:6px;padding:5px 8px;margin-bottom:3px;display:flex;align-items:center;justify-content:space-between">
+        <span style="font-size:11px;color:${fg};font-weight:600">${fromName} ${arrow} ${toName}</span>
         <button class="gp-btn gp-delete" style="padding:2px 6px;font-size:10px" onclick="gpRemoveMidSwap(${i})">✕</button>
       </div>`;
     });
   }
-  if (gpSwapMode) {
-    swapHtml += `<button class="gp-btn" style="width:100%;background:#c0392b;margin-top:4px" onclick="gpToggleSwapMode()">Done Planning Swaps</button>`;
+  if (gpMoveMode) {
+    swapHtml += `<button class="gp-btn" style="width:100%;background:#c0392b;margin-top:4px" onclick="gpSetMoveMode(null)">Done</button>`;
   } else {
-    swapHtml += `<button class="gp-btn" style="width:100%;background:#e67e22;margin-top:4px" onclick="gpToggleSwapMode()">${midSwaps.length ? '+ Add Another Swap' : 'Plan Mid-Q Swaps'}</button>`;
+    swapHtml += `<div style="display:flex;gap:4px;margin-top:4px">
+      <button class="gp-btn" style="flex:1;background:#e67e22" onclick="gpSetMoveMode('swap')">${midSwaps.length ? '+ Swap (↔)' : 'Plan Swap (↔)'}</button>
+      <button class="gp-btn" style="flex:1;background:#2980b9" onclick="gpSetMoveMode('move')">${midSwaps.length ? '+ Move (→)' : 'Plan Move (→)'}</button>
+    </div>`;
   }
   swapSection.innerHTML = swapHtml;
   c.appendChild(swapSection);
@@ -1387,8 +1455,8 @@ function gpPlayerName(idx) {
   return (idx != null && state.players[idx]) ? state.players[idx].name : '—';
 }
 
-function gpToggleSwapMode() {
-  gpSwapMode = !gpSwapMode;
+function gpSetMoveMode(kind) {
+  gpMoveMode = (gpMoveMode === kind) ? null : kind;
   gpFirstPick = null;
   renderPlanEditor();
 }
@@ -1411,36 +1479,71 @@ function gpDrawMidSwapLines(qk) {
   // Set viewBox to match actual pixel dimensions for correct line placement
   svg.setAttribute('viewBox', `0 0 ${rect.width} ${rect.height}`);
 
+  // Define arrowhead markers (for both ends of a swap, end only for a move)
+  const NS = 'http://www.w3.org/2000/svg';
+  const defs = document.createElementNS(NS, 'defs');
+  defs.innerHTML = `
+    <marker id="gp-arr-swap-end" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#f39c12"/></marker>
+    <marker id="gp-arr-swap-start" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M10,0 L0,5 L10,10 z" fill="#f39c12"/></marker>
+    <marker id="gp-arr-move-end" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#3498db"/></marker>
+  `;
+  svg.appendChild(defs);
+
+  function findEl(p) {
+    if (p.type === 'field') return container.querySelector(`.gp-cell[data-pos="${p.key}"]`);
+    if (p.type === 'benchOut') return container.querySelector('.gp-bench-out');
+    return container.querySelector(`.gp-bench-chip[data-bench="${p.key}"]`);
+  }
   swaps.forEach(sw => {
-    // Find the DOM elements for each side of the swap
-    let elA = null, elB = null;
-    if (sw.a.type === 'field') elA = container.querySelector(`.gp-cell[data-pos="${sw.a.key}"]`);
-    else elA = container.querySelector(`.gp-bench-chip[data-bench="${sw.a.key}"]`);
-    if (sw.b.type === 'field') elB = container.querySelector(`.gp-cell[data-pos="${sw.b.key}"]`);
-    else elB = container.querySelector(`.gp-bench-chip[data-bench="${sw.b.key}"]`);
+    const elA = findEl(sw.from), elB = findEl(sw.to);
     if (!elA || !elB) return;
 
     const rA = elA.getBoundingClientRect();
     const rB = elB.getBoundingClientRect();
-    const ax = rA.left + rA.width / 2 - rect.left;
-    const ay = rA.top + rA.height / 2 - rect.top;
-    const bx = rB.left + rB.width / 2 - rect.left;
-    const by = rB.top + rB.height / 2 - rect.top;
+    const cax = rA.left + rA.width / 2 - rect.left;
+    const cay = rA.top + rA.height / 2 - rect.top;
+    const cbx = rB.left + rB.width / 2 - rect.left;
+    const cby = rB.top + rB.height / 2 - rect.top;
+    // Pull endpoints back to each card's edge (with a small gap) so the
+    // arrow doesn't cover the position label or player name.
+    const dx = cbx - cax, dy = cby - cay;
+    const lenAB = Math.hypot(dx, dy) || 1;
+    const ux = dx / lenAB, uy = dy / lenAB;
+    function shrinkToBox(cx, cy, r, sign) {
+      // Move from center along (ux,uy)*sign until just outside the card box.
+      const halfW = r.width / 2 - 4;
+      const halfH = r.height / 2 - 4;
+      const sx = sign * ux, sy = sign * uy;
+      const tx = sx !== 0 ? halfW / Math.abs(sx) : Infinity;
+      const ty = sy !== 0 ? halfH / Math.abs(sy) : Infinity;
+      const t = Math.min(tx, ty);
+      return { x: cx + sx * t, y: cy + sy * t };
+    }
+    const pA = shrinkToBox(cax, cay, rA, +1);
+    const pB = shrinkToBox(cbx, cby, rB, -1);
+    const ax = pA.x, ay = pA.y, bx = pB.x, by = pB.y;
 
-    const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+    const isMove = sw.kind === 'move';
+    const line = document.createElementNS(NS, 'line');
     line.setAttribute('x1', ax); line.setAttribute('y1', ay);
     line.setAttribute('x2', bx); line.setAttribute('y2', by);
-    line.setAttribute('stroke', '#f39c12');
+    line.setAttribute('stroke', isMove ? '#3498db' : '#f39c12');
     line.setAttribute('stroke-width', '2');
-    line.setAttribute('stroke-dasharray', '6,4');
-    line.setAttribute('stroke-opacity', '0.6');
+    line.setAttribute('stroke-dasharray', isMove ? '0' : '6,4');
+    line.setAttribute('stroke-opacity', isMove ? '0.85' : '0.6');
     line.setAttribute('stroke-linecap', 'round');
+    if (isMove) {
+      line.setAttribute('marker-end', 'url(#gp-arr-move-end)');
+    } else {
+      line.setAttribute('marker-start', 'url(#gp-arr-swap-start)');
+      line.setAttribute('marker-end', 'url(#gp-arr-swap-end)');
+    }
     svg.appendChild(line);
   });
 }
 
 function gpSwitchQuarter(q) {
-  gpFirstPick = null; gpSwapMode = false;
+  gpFirstPick = null; gpMoveMode = null;
   // If switching to a quarter that has no lineup, inherit from previous
   const qk = 'Q' + q;
   if (!gpQuarters[qk]) gpQuarters[qk] = {};
@@ -1456,6 +1559,17 @@ function gpSwitchQuarter(q) {
 function gpTap(type, key) {
   const qk = 'Q' + gpEditQ;
   if (!gpQuarters[qk]) gpQuarters[qk] = {};
+
+  // The "→ Bench" target is destination-only and only valid for one-way moves.
+  if (type === 'benchOut') {
+    if (gpMoveMode === 'move' && gpFirstPick && gpFirstPick.type === 'field') {
+      if (!gpMidSwaps[qk]) gpMidSwaps[qk] = [];
+      gpMidSwaps[qk].push({ from: { ...gpFirstPick }, to: { type: 'benchOut' }, kind: 'move' });
+      gpFirstPick = null;
+      renderPlanEditor();
+    }
+    return;
+  }
 
   if (!gpFirstPick) {
     gpFirstPick = { type, key };
@@ -1477,10 +1591,10 @@ function gpTap(type, key) {
     return;
   }
 
-  if (gpSwapMode) {
-    // In mid-quarter swap definition mode - add pair to array, stay in swap mode
+  if (gpMoveMode) {
+    // Mid-quarter move definition - record arrow with current kind, stay in mode
     if (!gpMidSwaps[qk]) gpMidSwaps[qk] = [];
-    gpMidSwaps[qk].push({ a: { ...gpFirstPick }, b: { type, key } });
+    gpMidSwaps[qk].push({ from: { ...gpFirstPick }, to: { type, key }, kind: gpMoveMode });
     gpFirstPick = null;
     renderPlanEditor();
     return;
@@ -1519,18 +1633,46 @@ function getSwapSummary(prev, next) {
   return gpGetDiffSummary(prev, next).join(', ');
 }
 
-function saveGamePlan() {
-  const name = document.getElementById('gp-name').value.trim() || 'Untitled';
+function buildPlanQuartersFromEditor() {
   const quarters = JSON.parse(JSON.stringify(gpQuarters));
-  // Store mid-quarter swaps
   for (let q = 1; q <= 4; q++) {
     const qk = 'Q' + q;
     if (!quarters[qk]) quarters[qk] = {};
     if (gpMidSwaps[qk] && gpMidSwaps[qk].length) quarters[qk]._swaps = JSON.parse(JSON.stringify(gpMidSwaps[qk]));
     else delete quarters[qk]._swaps;
   }
+  return quarters;
+}
+
+function showGpSaveToast(msg) {
+  const el = document.getElementById('gp-save-toast');
+  if (!el) return;
+  el.textContent = msg;
+  el.style.opacity = '1';
+  clearTimeout(showGpSaveToast._t);
+  showGpSaveToast._t = setTimeout(() => { el.style.opacity = '0'; }, 1800);
+}
+
+function saveGamePlan() {
+  const name = document.getElementById('gp-name').value.trim() || 'Untitled';
+  const quarters = buildPlanQuartersFromEditor();
   if (editingPlanIdx >= 0) state.gamePlans[editingPlanIdx] = { name, quarters }; else { state.gamePlans.push({ name, quarters }); editingPlanIdx = state.gamePlans.length - 1; }
   saveState(); renderGamePlansUI();
+  showGpSaveToast('Saved ✓');
+}
+
+function saveGamePlanAsNew() {
+  const current = document.getElementById('gp-name').value.trim();
+  const suggested = current ? current + ' (copy)' : 'Plan ' + String.fromCharCode(65 + state.gamePlans.length);
+  const name = prompt('Save as new — plan name:', suggested);
+  if (name === null) return;
+  const finalName = name.trim() || suggested;
+  const quarters = buildPlanQuartersFromEditor();
+  state.gamePlans.push({ name: finalName, quarters });
+  editingPlanIdx = state.gamePlans.length - 1;
+  document.getElementById('gp-name').value = finalName;
+  saveState(); renderGamePlansUI();
+  showGpSaveToast('Saved as "' + finalName + '" ✓');
 }
 
 function loadGamePlanSettings(idx) { loadGamePlanByIdx(idx); closeSettings(); }
