@@ -1880,7 +1880,7 @@ function openGameLogForm(editId) {
   gameLogDraft = existing ? JSON.parse(JSON.stringify(existing)) : {
     id: genId(),
     date: todayIso(),
-    opponentId: state.opponents[0]?.id || '',
+    opponentId: state.opponents.length ? state.opponents[0].id : '__new__',
     opponentName: '',
     score: { us: 0, them: 0 },
     scorers: [],
