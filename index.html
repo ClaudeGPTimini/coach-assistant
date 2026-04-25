@@ -197,6 +197,41 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .settings-section { display: none; }
 .settings-section.active { display: block; }
 
+/* Game Log */
+#game-log-overlay { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: rgba(0,0,0,.7); z-index: 110; justify-content: center; align-items: center; }
+#game-log-overlay.open { display: flex; }
+#game-log-panel { background: #1a1a2e; border: 2px solid #2980b9; border-radius: 12px; padding: 16px; width: min(440px, 92vw); max-height: 90vh; overflow-y: auto; }
+#game-log-panel h3 { margin-bottom: 10px; color: #2980b9; font-size: 15px; }
+.gl-row { display: flex; gap: 6px; align-items: center; margin-bottom: 8px; }
+.gl-row label { font-size: 11px; color: #aaa; min-width: 70px; }
+.gl-row input[type="text"], .gl-row input[type="date"], .gl-row select, .gl-row textarea { background: #16213e; border: 1px solid #0f3460; color: #fff; padding: 6px 8px; border-radius: 5px; font-size: 13px; flex: 1; font-family: inherit; }
+.gl-row textarea { resize: vertical; min-height: 50px; }
+.gl-score-stepper { display: flex; align-items: center; gap: 4px; }
+.gl-score-stepper button { background: #0f3460; color: #fff; border: none; border-radius: 4px; width: 26px; height: 26px; cursor: pointer; font-weight: 700; }
+.gl-score-stepper input { width: 40px; text-align: center; background: #16213e; border: 1px solid #0f3460; color: #fff; padding: 4px; border-radius: 4px; font-size: 13px; }
+.gl-scorers-list { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 4px; }
+.gl-scorers-list select { background: #16213e; border: 1px solid #0f3460; color: #fff; padding: 4px 6px; border-radius: 4px; font-size: 12px; min-width: 100px; }
+.gl-game-row { background: #16213e; border-radius: 6px; padding: 8px 10px; margin-bottom: 6px; cursor: pointer; }
+.gl-game-row:hover { background: #1f2a4d; }
+.gl-game-meta { display: flex; justify-content: space-between; align-items: center; gap: 8px; }
+.gl-game-meta .gl-game-info { flex: 1; min-width: 0; }
+.gl-game-date { font-size: 11px; color: #888; }
+.gl-game-opp { font-size: 14px; color: #fff; font-weight: 600; }
+.gl-game-score { font-size: 16px; font-weight: 700; padding: 2px 8px; border-radius: 4px; white-space: nowrap; }
+.gl-game-score.win { background: rgba(39,174,96,0.2); color: #27ae60; }
+.gl-game-score.loss { background: rgba(231,76,60,0.2); color: #e74c3c; }
+.gl-game-score.tie { background: rgba(149,165,166,0.2); color: #95a5a6; }
+.gl-game-detail { margin-top: 8px; padding-top: 8px; border-top: 1px solid #0f3460; font-size: 12px; color: #ccc; display: none; }
+.gl-game-row.expanded .gl-game-detail { display: block; }
+.gl-detail-section { margin-bottom: 6px; }
+.gl-detail-label { font-size: 10px; color: #888; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 2px; }
+.gl-quarter-row { font-size: 11px; padding: 2px 0; }
+.gl-row-actions { display: flex; gap: 4px; margin-top: 6px; }
+.opp-row { display: flex; gap: 6px; align-items: center; padding: 6px 8px; background: #16213e; border-radius: 5px; margin-bottom: 4px; }
+.opp-row input { flex: 1; background: transparent; border: 1px solid transparent; color: #fff; padding: 3px 5px; border-radius: 3px; font-size: 12px; }
+.opp-row input:focus { background: #0f1a30; border-color: #0f3460; outline: none; }
+.opp-row .opp-name { max-width: 110px; font-weight: 600; }
+
 /* Timer flash */
 #timer-flash { display: none; position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; z-index: 200; pointer-events: none; }
 #timer-flash.flashing { display: block; animation: screenFlash 0.4s ease-in-out 4; }
@@ -495,6 +530,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div class="settings-tabs">
       <button class="settings-tab active" onclick="switchSettingsTab('general')">General</button>
       <button class="settings-tab" onclick="switchSettingsTab('plans')">Game Plans</button>
+      <button class="settings-tab" onclick="switchSettingsTab('log')">Game Log</button>
     </div>
     <div id="tab-general" class="settings-section active">
       <h3>Timer Presets</h3>
@@ -518,6 +554,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         <div id="gp-quarters"></div>
       </div>
     </div>
+    <div id="tab-log" class="settings-section">
+      <h3>Game Log</h3>
+      <button class="add-btn" onclick="openGameLogForm()" style="margin-bottom:12px">+ Log a Game</button>
+      <div id="game-log-list"></div>
+      <h3 style="margin-top:18px">Opponents</h3>
+      <div id="opponents-list"></div>
+    </div>
     <br>
     <button id="close-settings" onclick="closeSettings()">Save & Close</button>
   </div>
@@ -530,6 +573,18 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <div id="subs-list"></div>
     <button id="subs-apply" onclick="applySubs()">Apply Subs</button>
     <button id="subs-cancel" onclick="closeSubs()">Cancel</button>
+  </div>
+</div>
+
+<!-- Game Log Form -->
+<div id="game-log-overlay" onclick="if(event.target===this)closeGameLogForm()">
+  <div id="game-log-panel">
+    <h3 id="game-log-title">Log a Game</h3>
+    <div id="game-log-form-body"></div>
+    <div style="display:flex;gap:6px;margin-top:10px">
+      <button class="gp-btn gp-save" onclick="saveGameLogEntry()" style="flex:1">Save</button>
+      <button class="gp-btn gp-delete" onclick="closeGameLogForm()" style="flex:1;background:#555">Cancel</button>
+    </div>
   </div>
 </div>
 
@@ -587,7 +642,7 @@ function defaultState() {
     players: DEFAULT_ROSTER.map(n => ({ name: n, position: '' })),
     presets: DEFAULT_PRESETS.map(p => ({...p})),
     assignments: {}, absent: [], gamePlans: [], activeGamePlan: null, swapPresets: [],
-    currentQuarter: 0
+    currentQuarter: 0, gameLog: [], opponents: []
   };
 }
 
@@ -618,6 +673,8 @@ function loadState() {
       if (s.activeGamePlan === undefined) s.activeGamePlan = null;
       if (!s.swapPresets) s.swapPresets = [];
       if (s.currentQuarter === undefined) s.currentQuarter = 0;
+      if (!s.gameLog) s.gameLog = [];
+      if (!s.opponents) s.opponents = [];
       const migrated = {};
       Object.keys(s.assignments || {}).forEach(k => {
         const nk = k === 'GK' ? 'G' : k === 'Mid' ? 'M' : k;
@@ -650,6 +707,8 @@ dbRef.on('value', (snapshot) => {
     if (!state.assignments) state.assignments = {};
     if (state.activeGamePlan === undefined) state.activeGamePlan = null;
     if (state.currentQuarter === undefined) state.currentQuarter = 0;
+    if (!state.gameLog) state.gameLog = [];
+    if (!state.opponents) state.opponents = [];
     normalizeMoveData(state);
     currentQuarter = state.currentQuarter;
     localStorage.setItem('soccer-coach-state', JSON.stringify(state));
@@ -1228,10 +1287,13 @@ function openSettings() { renderSettingsPanel(); document.getElementById('settin
 function closeSettings() { saveSettings(); document.getElementById('settings-overlay').classList.remove('open'); if (appMode === 'game') render(); }
 
 function switchSettingsTab(tab) {
-  document.querySelectorAll('.settings-tab').forEach((t, i) => t.classList.toggle('active', (tab === 'general' && i === 0) || (tab === 'plans' && i === 1)));
+  const order = ['general', 'plans', 'log'];
+  document.querySelectorAll('.settings-tab').forEach((t, i) => t.classList.toggle('active', order[i] === tab));
   document.getElementById('tab-general').classList.toggle('active', tab === 'general');
   document.getElementById('tab-plans').classList.toggle('active', tab === 'plans');
+  document.getElementById('tab-log').classList.toggle('active', tab === 'log');
   if (tab === 'plans') renderGamePlansUI();
+  if (tab === 'log') renderGameLogUI();
 }
 
 function renderSettingsPanel() {
@@ -1681,6 +1743,254 @@ function deleteGamePlan(idx) {
   if (!confirm('Delete "' + planName + '"? This cannot be undone.')) return;
   if (state.activeGamePlan === idx) state.activeGamePlan = null; else if (state.activeGamePlan != null && state.activeGamePlan > idx) state.activeGamePlan--;
   state.gamePlans.splice(idx, 1); saveState(); renderGamePlansUI();
+}
+
+// ============================================================
+// GAME LOG
+// ============================================================
+let gameLogEditingId = null; // id being edited; null = new entry
+let gameLogDraft = null;     // working copy in the form
+
+function genId() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 6); }
+
+function todayIso() { return new Date().toISOString().slice(0, 10); }
+
+function snapshotLineupForToday() {
+  // Build {Q1: {pos: name}, ...} from the active game plan; fall back to current assignments at Q-current.
+  const out = {};
+  const idxToName = i => (i != null && state.players[i]) ? state.players[i].name : null;
+  if (state.activeGamePlan != null && state.gamePlans[state.activeGamePlan]) {
+    const plan = state.gamePlans[state.activeGamePlan];
+    for (let q = 1; q <= 4; q++) {
+      const qd = (plan.quarters && plan.quarters['Q' + q]) || {};
+      const lineup = {};
+      POSITIONS.forEach(p => { const n = idxToName(qd[p]); if (n) lineup[p] = n; });
+      if (Object.keys(lineup).length) out['Q' + q] = lineup;
+    }
+  }
+  if (Object.keys(out).length === 0) {
+    const lineup = {};
+    POSITIONS.forEach(p => { const n = idxToName(state.assignments[p]); if (n) lineup[p] = n; });
+    out['Q' + (currentQuarter + 1)] = lineup;
+  }
+  return out;
+}
+
+function renderGameLogUI() {
+  const list = document.getElementById('game-log-list');
+  list.innerHTML = '';
+  if (!state.gameLog.length) {
+    list.innerHTML = '<div style="color:#666;font-size:12px;font-style:italic">No games logged yet.</div>';
+  } else {
+    const sorted = state.gameLog.slice().sort((a, b) => (b.date || '').localeCompare(a.date || ''));
+    sorted.forEach(g => {
+      const opp = (state.opponents.find(o => o.id === g.opponentId) || {}).name || g.opponentName || 'Unknown';
+      const us = g.score?.us ?? 0, them = g.score?.them ?? 0;
+      const cls = us > them ? 'win' : us < them ? 'loss' : 'tie';
+      const row = document.createElement('div');
+      row.className = 'gl-game-row';
+      row.innerHTML = `
+        <div class="gl-game-meta" onclick="this.parentElement.classList.toggle('expanded')">
+          <div class="gl-game-info">
+            <div class="gl-game-date">${escHtml(g.date || '')}</div>
+            <div class="gl-game-opp">vs ${escHtml(opp)}</div>
+          </div>
+          <div class="gl-game-score ${cls}">${us} – ${them}</div>
+        </div>
+        <div class="gl-game-detail">${renderGameDetail(g)}</div>
+      `;
+      list.appendChild(row);
+    });
+  }
+  renderOpponentsList();
+}
+
+function renderGameDetail(g) {
+  let html = '';
+  const scorers = g.scorers || [];
+  if (scorers.length) {
+    html += `<div class="gl-detail-section"><div class="gl-detail-label">Scorers</div>${scorers.map(s => escHtml(s || 'Unknown')).join(', ')}</div>`;
+  }
+  const qkeys = Object.keys(g.quarters || {}).sort();
+  if (qkeys.length) {
+    html += `<div class="gl-detail-section"><div class="gl-detail-label">Lineup</div>`;
+    qkeys.forEach(qk => {
+      const lineup = g.quarters[qk];
+      const parts = POSITIONS.map(p => `${p}: ${escHtml(lineup[p] || '—')}`).join(' · ');
+      html += `<div class="gl-quarter-row"><b>${qk}</b>: ${parts}</div>`;
+    });
+    html += `</div>`;
+  }
+  if (g.notes) {
+    html += `<div class="gl-detail-section"><div class="gl-detail-label">Notes</div>${escHtml(g.notes)}</div>`;
+  }
+  html += `<div class="gl-row-actions">
+    <button class="gp-btn gp-load" onclick="event.stopPropagation();openGameLogForm('${g.id}')">Edit</button>
+    <button class="gp-btn gp-delete" onclick="event.stopPropagation();deleteGameLogEntry('${g.id}')">Delete</button>
+  </div>`;
+  return html;
+}
+
+function renderOpponentsList() {
+  const c = document.getElementById('opponents-list');
+  c.innerHTML = '';
+  if (!state.opponents.length) {
+    c.innerHTML = '<div style="color:#666;font-size:12px;font-style:italic">No opponents yet. Adding one when you log a game saves it here.</div>';
+    return;
+  }
+  state.opponents.forEach(opp => {
+    const row = document.createElement('div');
+    row.className = 'opp-row';
+    row.innerHTML = `
+      <input type="text" class="opp-name" value="${escAttr(opp.name)}" placeholder="Name" onchange="updateOpponentField('${opp.id}','name',this.value)">
+      <input type="text" value="${escAttr(opp.note || '')}" placeholder="Scouting notes" onchange="updateOpponentField('${opp.id}','note',this.value)">
+      <button class="gp-btn gp-delete" style="padding:2px 6px;font-size:11px" onclick="deleteOpponent('${opp.id}')">✕</button>
+    `;
+    c.appendChild(row);
+  });
+}
+
+function updateOpponentField(id, field, value) {
+  const opp = state.opponents.find(o => o.id === id);
+  if (!opp) return;
+  opp[field] = value.trim();
+  saveState();
+}
+
+function deleteOpponent(id) {
+  if (!confirm('Delete this opponent? Past games against them stay in the log but lose the live link to scouting notes.')) return;
+  state.opponents = state.opponents.filter(o => o.id !== id);
+  saveState();
+  renderOpponentsList();
+  renderGameLogUI();
+}
+
+function openGameLogForm(editId) {
+  gameLogEditingId = editId || null;
+  const existing = editId ? state.gameLog.find(g => g.id === editId) : null;
+  gameLogDraft = existing ? JSON.parse(JSON.stringify(existing)) : {
+    id: genId(),
+    date: todayIso(),
+    opponentId: state.opponents[0]?.id || '',
+    opponentName: '',
+    score: { us: 0, them: 0 },
+    scorers: [],
+    quarters: snapshotLineupForToday(),
+    notes: ''
+  };
+  document.getElementById('game-log-title').textContent = editId ? 'Edit Game' : 'Log a Game';
+  renderGameLogForm();
+  document.getElementById('game-log-overlay').classList.add('open');
+}
+
+function closeGameLogForm() {
+  document.getElementById('game-log-overlay').classList.remove('open');
+  gameLogDraft = null;
+  gameLogEditingId = null;
+}
+
+function renderGameLogForm() {
+  const d = gameLogDraft; if (!d) return;
+  const body = document.getElementById('game-log-form-body');
+  // Opponent options
+  let oppOptions = state.opponents.map(o => `<option value="${o.id}"${o.id === d.opponentId ? ' selected' : ''}>${escHtml(o.name)}</option>`).join('');
+  oppOptions += `<option value="__new__"${d.opponentId === '__new__' ? ' selected' : ''}>+ New opponent…</option>`;
+  // Scorer options (players)
+  const playerOptions = (sel) => `<option value="">— unknown —</option>` + state.players.map((p, i) => `<option value="${i}"${String(i) === String(sel) ? ' selected' : ''}>${escHtml(p.name)}</option>`).join('');
+  // Build scorer rows = us score count
+  let scorerRows = '';
+  for (let i = 0; i < d.score.us; i++) {
+    scorerRows += `<select onchange="gameLogSetScorer(${i}, this.value)">${playerOptions(d.scorers[i])}</select>`;
+  }
+  if (d.score.us === 0) scorerRows = '<span style="color:#666;font-size:11px">No goals to log</span>';
+
+  let html = '';
+  html += `<div class="gl-row"><label>Date</label><input type="date" value="${d.date}" onchange="gameLogDraft.date=this.value"></div>`;
+  html += `<div class="gl-row"><label>Opponent</label><select onchange="gameLogSetOpponent(this.value)">${oppOptions}</select></div>`;
+  if (d.opponentId === '__new__') {
+    html += `<div class="gl-row"><label>New name</label><input type="text" value="${escAttr(d.opponentName || '')}" placeholder="Team name" oninput="gameLogDraft.opponentName=this.value"></div>`;
+  }
+  // Show scouting note for chosen opponent
+  const oppRec = state.opponents.find(o => o.id === d.opponentId);
+  if (oppRec) {
+    html += `<div class="gl-row"><label>Scouting</label><input type="text" value="${escAttr(oppRec.note || '')}" placeholder="Notes about this team" onchange="updateOpponentField('${oppRec.id}','note',this.value)"></div>`;
+  } else if (d.opponentId === '__new__') {
+    html += `<div class="gl-row"><label>Scouting</label><input type="text" value="${escAttr(d.newOpponentNote || '')}" placeholder="Notes about this team" oninput="gameLogDraft.newOpponentNote=this.value"></div>`;
+  }
+  html += `<div class="gl-row"><label>Score (us)</label>
+    <div class="gl-score-stepper">
+      <button onclick="gameLogAdjScore('us',-1)">−</button>
+      <input type="number" min="0" value="${d.score.us}" onchange="gameLogSetScore('us',parseInt(this.value)||0)">
+      <button onclick="gameLogAdjScore('us',1)">+</button>
+    </div></div>`;
+  html += `<div class="gl-row"><label>Score (them)</label>
+    <div class="gl-score-stepper">
+      <button onclick="gameLogAdjScore('them',-1)">−</button>
+      <input type="number" min="0" value="${d.score.them}" onchange="gameLogSetScore('them',parseInt(this.value)||0)">
+      <button onclick="gameLogAdjScore('them',1)">+</button>
+    </div></div>`;
+  html += `<div class="gl-row" style="align-items:flex-start"><label>Scorers</label><div class="gl-scorers-list" style="flex:1">${scorerRows}</div></div>`;
+  html += `<div class="gl-row" style="align-items:flex-start"><label>Notes</label><textarea oninput="gameLogDraft.notes=this.value" placeholder="How'd it go?">${escHtml(d.notes || '')}</textarea></div>`;
+  body.innerHTML = html;
+}
+
+function gameLogSetOpponent(val) {
+  gameLogDraft.opponentId = val;
+  if (val !== '__new__') gameLogDraft.opponentName = '';
+  renderGameLogForm();
+}
+
+function gameLogAdjScore(side, delta) {
+  gameLogDraft.score[side] = Math.max(0, (gameLogDraft.score[side] || 0) + delta);
+  if (side === 'us') gameLogDraft.scorers.length = gameLogDraft.score.us;
+  renderGameLogForm();
+}
+function gameLogSetScore(side, val) {
+  gameLogDraft.score[side] = Math.max(0, val);
+  if (side === 'us') gameLogDraft.scorers.length = gameLogDraft.score.us;
+  renderGameLogForm();
+}
+function gameLogSetScorer(i, val) {
+  if (val === '') { gameLogDraft.scorers[i] = null; return; }
+  const p = state.players[parseInt(val)];
+  gameLogDraft.scorers[i] = p ? p.name : null;
+}
+
+function saveGameLogEntry() {
+  const d = gameLogDraft; if (!d) return;
+  // If new opponent, create the opponent record now.
+  if (d.opponentId === '__new__') {
+    const name = (d.opponentName || '').trim();
+    if (!name) { alert('Please name the opponent or pick an existing one.'); return; }
+    const opp = { id: genId(), name, note: (d.newOpponentNote || '').trim() };
+    state.opponents.push(opp);
+    d.opponentId = opp.id;
+  }
+  // Snapshot opponent name into the entry for display robustness.
+  const opp = state.opponents.find(o => o.id === d.opponentId);
+  d.opponentName = opp ? opp.name : (d.opponentName || 'Unknown');
+  // Normalize scorers length to score.us
+  d.scorers = (d.scorers || []).slice(0, d.score.us);
+  while (d.scorers.length < d.score.us) d.scorers.push(null);
+  // Strip transient field
+  delete d.newOpponentNote;
+  // Save
+  if (gameLogEditingId) {
+    const idx = state.gameLog.findIndex(g => g.id === gameLogEditingId);
+    if (idx >= 0) state.gameLog[idx] = d;
+  } else {
+    state.gameLog.push(d);
+  }
+  saveState();
+  closeGameLogForm();
+  renderGameLogUI();
+}
+
+function deleteGameLogEntry(id) {
+  if (!confirm('Delete this game log entry?')) return;
+  state.gameLog = state.gameLog.filter(g => g.id !== id);
+  saveState();
+  renderGameLogUI();
 }
 
 function escHtml(s) { return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
