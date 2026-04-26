@@ -970,7 +970,7 @@ function selectEmptyPosition(pos) {
   }
 }
 
-function doSwap(sel1, sel2) { doSwapDirect(sel1, sel2); selectedPlayer = null; saveState(); render(); }
+function doSwap(sel1, sel2) { applyMove({ from: sel1, to: sel2, kind: 'swap' }); selectedPlayer = null; saveState(); render(); }
 
 // --- Render ---
 function render() {
