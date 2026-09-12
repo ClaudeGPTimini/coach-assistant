@@ -1,0 +1,24 @@
+{
+  "rules": {
+    "liveGame": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "coachData": {
+      ".read": "auth != null",
+      ".write": "auth != null"
+    },
+    "teamHub": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "teamRoles": {
+      ".read": true,
+      ".write": "auth != null"
+    },
+    "gameState": {
+      ".read": true,
+      ".write": "auth != null"
+    }
+  }
+}
