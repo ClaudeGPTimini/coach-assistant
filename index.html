@@ -350,29 +350,215 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
   #bench-bar { min-height: 42px; padding: 4px 8px; }
 }
+
+/* ========== APP HEADER & AUTH ========== */
+#app-header {
+  height: 44px;
+  background: #12172b;
+  border-bottom: 1px solid #0f3460;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  z-index: 105;
+  flex-shrink: 0;
+}
+#header-left { display: flex; align-items: center; gap: 8px; cursor: pointer; }
+#header-title { font-size: 15px; font-weight: 800; color: #e94560; letter-spacing: .5px; }
+#header-center { display: flex; align-items: center; gap: 6px; }
+.role-badge {
+  font-size: 10px; font-weight: 700; text-transform: uppercase; padding: 2px 8px; border-radius: 10px; letter-spacing: .5px;
+}
+.role-head_coach { background: rgba(243,156,18,.2); color: #f39c12; border: 1px solid #f39c12; }
+.role-assistant_coach { background: rgba(52,152,219,.2); color: #3498db; border: 1px solid #3498db; }
+.role-parent { background: rgba(46,204,113,.2); color: #2ecc71; border: 1px solid #2ecc71; }
+.role-guest { background: rgba(149,165,166,.2); color: #95a5a6; border: 1px solid #95a5a6; }
+#preview-pill {
+  background: #e67e22; color: #fff; font-size: 10px; font-weight: 700; padding: 2px 7px; border-radius: 10px; display: none; align-items: center; gap: 4px; cursor: pointer;
+}
+#header-right { display: flex; align-items: center; gap: 8px; }
+.user-chip { display: flex; align-items: center; gap: 6px; }
+.user-avatar { width: 26px; height: 26px; border-radius: 50%; object-fit: cover; border: 1px solid #0f3460; }
+.user-avatar-fallback { width: 26px; height: 26px; border-radius: 50%; background: #34495e; display: flex; align-items: center; justify-content: center; font-size: 11px; font-weight: 700; color: #fff; }
+.user-name { font-size: 12px; font-weight: 600; color: #fff; max-width: 90px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.auth-btn { background: #0f3460; color: #fff; border: 1px solid #1a5276; border-radius: 5px; padding: 4px 8px; font-size: 11px; font-weight: 600; cursor: pointer; transition: background .15s; }
+.auth-btn:hover { background: #1a5276; }
+.auth-btn-google { background: #fff; color: #333; border: 1px solid #ddd; font-weight: 700; display: flex; align-items: center; gap: 5px; }
+.auth-btn-google:hover { background: #f1f1f1; }
+
+/* ========== PARENT PORTAL ========== */
+#parent-portal { display: none; flex-direction: column; width: 100vw; height: calc(100vh - 44px); height: calc(100dvh - 44px); background: #1a1a2e; overflow: hidden; }
+#parent-portal.active { display: flex; }
+#pp-tabs {
+  display: flex; background: #16213e; border-bottom: 2px solid #0f3460; flex-shrink: 0;
+}
+.pp-tab-btn {
+  flex: 1; padding: 10px 4px; background: transparent; border: none; border-bottom: 3px solid transparent; color: #8e9aaf; font-size: 12px; font-weight: 700; cursor: pointer; text-align: center; display: flex; align-items: center; justify-content: center; gap: 5px; transition: all .15s;
+}
+.pp-tab-btn.active { color: #2ecc71; border-bottom-color: #2ecc71; background: rgba(46,204,113,.08); }
+.pp-tab-content { flex: 1; min-height: 0; overflow-y: auto; padding: 12px; display: none; flex-direction: column; gap: 12px; }
+.pp-tab-content.active { display: flex; }
+
+/* Parent Live Field View */
+#pp-field-container { flex: 1; min-height: 220px; max-height: 60vh; position: relative; display: flex; flex-direction: column; }
+#pp-field { flex: 1; background: #2d8a4e; border-radius: 8px; position: relative; border: 3px solid #fff; overflow: hidden; min-height: 0; }
+#pp-field-inner { width: 100%; height: 100%; position: relative; }
+#pp-field-positions { width: 100%; height: 100%; position: absolute; top: 0; left: 0; }
+#pp-live-status {
+  display: flex; align-items: center; justify-content: space-between; background: #16213e; border: 1px solid #0f3460; border-radius: 8px; padding: 8px 12px; font-size: 13px; font-weight: 700;
+}
+.live-indicator { display: flex; align-items: center; gap: 6px; color: #2ecc71; }
+.live-dot { width: 8px; height: 8px; border-radius: 50%; background: #2ecc71; animation: pulse 1.5s infinite; }
+@keyframes pulse { 0% { opacity: 1; transform: scale(1); } 50% { opacity: .4; transform: scale(.8); } 100% { opacity: 1; transform: scale(1); } }
+#pp-bench-box { background: #16213e; border: 1px solid #0f3460; border-radius: 8px; padding: 8px 12px; }
+#pp-bench-list { display: flex; gap: 6px; flex-wrap: wrap; margin-top: 6px; }
+
+/* Hub & What's Happening Cards */
+.hub-card {
+  background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 14px; display: flex; flex-direction: column; gap: 8px; box-shadow: 0 4px 12px rgba(0,0,0,.2);
+}
+.hub-card-header { display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,.08); padding-bottom: 8px; }
+.hub-card-title { font-size: 14px; font-weight: 800; color: #fff; display: flex; align-items: center; gap: 6px; }
+.hub-badge { font-size: 11px; font-weight: 700; padding: 2px 8px; border-radius: 8px; }
+.hub-badge-next { background: #e94560; color: #fff; }
+.hub-badge-jersey { background: #27ae60; color: #fff; }
+.hub-row { display: flex; align-items: center; gap: 8px; font-size: 13px; color: #ccc; }
+.hub-row b { color: #fff; font-weight: 600; }
+.hub-row a { color: #3498db; text-decoration: none; }
+.hub-row a:hover { text-decoration: underline; }
+
+/* Sign-Ups Schedule */
+.signup-card {
+  background: #16213e; border: 1px solid #0f3460; border-radius: 12px; padding: 12px; display: flex; flex-direction: column; gap: 10px;
+}
+.signup-date-title { font-size: 13px; font-weight: 800; color: #e94560; }
+.signup-slot {
+  background: #0f1a30; border: 1px solid #0f3460; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; justify-content: space-between; gap: 8px;
+}
+.signup-slot-info { display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; }
+.slot-icon { font-size: 18px; }
+.claim-btn {
+  background: #27ae60; color: #fff; border: none; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background .15s;
+}
+.claim-btn:hover { background: #2ecc71; }
+.release-btn {
+  background: #e67e22; color: #fff; border: none; border-radius: 6px; padding: 5px 10px; font-size: 11px; font-weight: 700; cursor: pointer; transition: background .15s;
+}
+.release-btn:hover { background: #d35400; }
+.claimed-badge { font-size: 11px; font-weight: 700; color: #2ecc71; background: rgba(46,204,113,.15); padding: 3px 8px; border-radius: 6px; }
+
+/* Team Hub Mode (Coaches) */
+#team-hub-mode {
+  display: none; flex-direction: column; width: 100vw; height: calc(100vh - 44px); height: calc(100dvh - 44px); background: #1a1a2e; overflow: hidden;
+}
+#team-hub-mode.active { display: flex; }
 </style>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-database-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-auth-compat.js"></script>
 </head>
 <body>
 <div id="timer-flash"></div>
 <div id="app">
+  <!-- Top Application Header with Auth & Roles -->
+  <header id="app-header">
+    <div id="header-left" onclick="goHome()">
+      <span id="header-title">⚽ EMMA SOCCER</span>
+    </div>
+    <div id="header-center">
+      <span id="header-role-badge" class="role-badge role-guest">Guest</span>
+      <span id="preview-pill" onclick="setRolePreview(null)">PREVIEW: PARENT <span style="font-size:9px">✕</span></span>
+    </div>
+    <div id="header-right">
+      <div id="header-user" class="user-chip"></div>
+      <button onclick="toggleFullscreen()" class="auth-btn" style="padding:4px 6px">⛶</button>
+    </div>
+  </header>
+
   <div id="home-screen">
-    <div id="home-title">⚽ SOCCER COACH</div>
+    <div id="home-title">⚽ SOCCER COACH & TEAM HUB</div>
     <div id="home-cards">
       <div class="home-card" onclick="goToMode('game')">
         <span class="home-icon">🏆</span>
-        <span class="home-label">GAME</span>
+        <span class="home-label">GAME DAY</span>
       </div>
       <div class="home-card" onclick="goToMode('practice')">
         <span class="home-icon">🏃</span>
         <span class="home-label">PRACTICE</span>
       </div>
+      <div class="home-card" onclick="goToMode('hub')">
+        <span class="home-icon">📅</span>
+        <span class="home-label">TEAM HUB</span>
+      </div>
+      <div class="home-card" onclick="goToMode('signups')">
+        <span class="home-icon">📋</span>
+        <span class="home-label">SIGN-UPS</span>
+      </div>
       <div class="home-card" onclick="openSettingsFromHome()">
         <span class="home-icon">⚙️</span>
-        <span class="home-label">SETTINGS</span>
+        <span class="home-label">SETTINGS & ROLES</span>
       </div>
     </div>
+  </div>
+
+  <!-- Parent Portal (Clean Spectator & Family Hub) -->
+  <div id="parent-portal">
+    <nav id="pp-tabs">
+      <button class="pp-tab-btn active" id="pp-btn-field" onclick="switchParentTab('field')">⚽ Live Field</button>
+      <button class="pp-tab-btn" id="pp-btn-hub" onclick="switchParentTab('hub')">📅 What's Happening</button>
+      <button class="pp-tab-btn" id="pp-btn-signups" onclick="switchParentTab('signups')">📋 Sign-Ups</button>
+    </nav>
+    <!-- Parent Tab 1: Live Field -->
+    <div id="pp-tab-field" class="pp-tab-content active">
+      <div id="pp-live-status">
+        <div class="live-indicator"><span class="live-dot"></span> <span id="pp-quarter-text">Q1 Live</span></div>
+        <div id="pp-score-text" style="color:#f39c12">Emma Soccer vs Opponent</div>
+        <div id="pp-timer-text" style="font-family:monospace;font-size:16px;color:#2ecc71">00:00</div>
+      </div>
+      <div id="pp-field-container">
+        <div id="pp-field">
+          <div id="pp-field-inner">
+            <svg id="pp-field-svg" viewBox="0 0 1000 600" preserveAspectRatio="none">
+              <rect x="0" y="0" width="1000" height="600" fill="none" stroke="#fff" stroke-width="3"/>
+              <line x1="500" y1="0" x2="500" y2="600" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+              <circle cx="500" cy="300" r="80" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+              <circle cx="500" cy="300" r="4" fill="rgba(255,255,255,.5)"/>
+              <rect x="0" y="175" width="120" height="250" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+              <rect x="0" y="225" width="50" height="150" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+              <rect x="880" y="175" width="120" height="250" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+              <rect x="950" y="225" width="50" height="150" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2"/>
+            </svg>
+            <div id="pp-field-positions"></div>
+          </div>
+        </div>
+      </div>
+      <div id="pp-bench-box">
+        <div style="font-size:11px;font-weight:700;color:#8e9aaf;text-transform:uppercase">Bench (Substitutes Ready)</div>
+        <div id="pp-bench-list"></div>
+      </div>
+    </div>
+    <!-- Parent Tab 2: What's Happening -->
+    <div id="pp-tab-hub" class="pp-tab-content">
+      <div id="pp-hub-cards"></div>
+    </div>
+    <!-- Parent Tab 3: Sign-Ups -->
+    <div id="pp-tab-signups" class="pp-tab-content">
+      <div id="pp-signups-list"></div>
+    </div>
+  </div>
+
+  <!-- Coach Team Hub & Sign-Ups Screen -->
+  <div id="team-hub-mode">
+    <div style="background:#16213e;padding:10px 14px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid #0f3460">
+      <div style="font-size:15px;font-weight:800;color:#fff">📅 Team Hub & Sign-Ups</div>
+      <button onclick="goHome()" class="auth-btn">✕ Back to Home</button>
+    </div>
+    <div style="display:flex;background:#12172b;border-bottom:1px solid #0f3460">
+      <button class="pp-tab-btn active" id="ch-tab-btn-schedule" onclick="switchCoachHubTab('schedule')">📅 Schedule & Events</button>
+      <button class="pp-tab-btn" id="ch-tab-btn-announcements" onclick="switchCoachHubTab('announcements')">📢 Announcements</button>
+      <button class="pp-tab-btn" id="ch-tab-btn-snacks" onclick="switchCoachHubTab('snacks')">🍊 Snacks & Sign-Ups</button>
+    </div>
+    <div id="coach-hub-content" style="flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:12px"></div>
   </div>
   <div id="nav-buttons">
     <button onclick="toggleFullscreen()">⛶</button>
@@ -531,6 +717,7 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <button class="settings-tab active" onclick="switchSettingsTab('general')">General</button>
       <button class="settings-tab" onclick="switchSettingsTab('plans')">Game Plans</button>
       <button class="settings-tab" onclick="switchSettingsTab('log')">Game Log</button>
+      <button class="settings-tab" id="tab-btn-roles" onclick="switchSettingsTab('roles')">Team & Roles</button>
     </div>
     <div id="tab-general" class="settings-section active">
       <h3>Timer Presets</h3>
@@ -560,6 +747,34 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <div id="game-log-list"></div>
       <h3 style="margin-top:18px">Opponents</h3>
       <div id="opponents-list"></div>
+    </div>
+    <div id="tab-roles" class="settings-section">
+      <h3>Head Coach</h3>
+      <div style="font-size:12px;color:#aaa;margin-bottom:8px">Primary Head Coach: <b id="roles-head-coach-display" style="color:#f39c12">Rmagee3190@gmail.com</b></div>
+      
+      <h3 style="margin-top:16px">Assistant Coach Permissions</h3>
+      <label style="display:flex;align-items:center;gap:8px;font-size:13px;cursor:pointer;background:#0f1a30;padding:10px;border-radius:6px;border:1px solid #0f3460">
+        <input type="checkbox" id="perm-assistant-edit-plans" onchange="onToggleAssistantEditPlans(this.checked)">
+        <span>Allow Assistant Coaches to create & edit Game Plans and Practice Drills</span>
+      </label>
+
+      <h3 style="margin-top:16px">Assistant Coaches</h3>
+      <div id="assistant-coaches-list" style="display:flex;flex-direction:column;gap:6px;margin-bottom:8px"></div>
+      <div style="display:flex;gap:6px">
+        <input type="email" id="new-assistant-email" placeholder="assistant.coach@gmail.com" style="flex:1;background:#0f1a30;border:1px solid #0f3460;color:#fff;border-radius:5px;padding:6px 8px;font-size:12px">
+        <button class="add-btn" onclick="addAssistantCoachByInput()" style="margin:0">+ Add Assistant</button>
+      </div>
+
+      <h3 style="margin-top:18px">Head Coach Role Preview Mode</h3>
+      <div style="font-size:12px;color:#aaa;margin-bottom:8px">Test how the application looks and functions for other roles:</div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <button class="gp-btn gp-save" onclick="setRolePreview(null)">👑 Head Coach (Default)</button>
+        <button class="gp-btn gp-load" onclick="setRolePreview('assistant_coach')">📋 Assistant Coach</button>
+        <button class="gp-btn" onclick="setRolePreview('parent')" style="background:#2ecc71;color:#000">👨‍👩‍👧 Parent</button>
+      </div>
+
+      <h3 style="margin-top:18px">Team Directory (Signed-In Users)</h3>
+      <div id="team-directory-list" style="font-size:12px;color:#bbb"></div>
     </div>
     <br>
     <button id="close-settings" onclick="closeSettings()">Save & Close</button>
@@ -610,10 +825,86 @@ const firebaseConfig = {
   appId: "1:98665714749:web:0111d59677c4ffc9410654"
 };
 firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
 const db = firebase.database();
-const dbRef = db.ref('gameState');
+const dbRefLegacy = db.ref('gameState');
+const dbRefLive = db.ref('liveGame');
+const dbRefCoach = db.ref('coachData');
+const dbRefHub = db.ref('teamHub');
+const dbRefRoles = db.ref('teamRoles');
 let firebaseReady = false;
 let firebaseIgnoreCount = 0;
+
+// --- Auth & Roles State ---
+let currentUser = null;
+let userRole = 'guest'; // 'head_coach' | 'assistant_coach' | 'parent' | 'guest'
+let previewRole = null; // Head coach previewing another role
+
+let teamRoles = {
+  headCoachEmail: 'rmagee3190@gmail.com',
+  assistantCoachEmails: [],
+  permissions: { assistantCanEditPlans: false },
+  users: {}
+};
+
+let liveGame = {
+  assignments: {},
+  bench: [],
+  absent: [],
+  currentQuarter: 0,
+  timer: { seconds: 0, running: false, countUp: false, updatedAt: 0 },
+  score: { us: 0, them: 0, opponent: '' },
+  updatedAt: 0
+};
+
+let teamHub = {
+  nextEvent: {
+    type: 'game',
+    opponent: 'Lightning',
+    date: '2026-09-19',
+    time: '09:00',
+    arrivalTime: '08:30',
+    location: 'Specht Soccer Complex - Field 4',
+    locationUrl: 'https://maps.google.com/?q=Specht+Soccer+Complex',
+    jerseyColor: 'Green (Home)',
+    notes: 'Wear shin guards under socks! Bring extra water.'
+  },
+  announcements: [
+    {
+      id: 'ann-1',
+      author: 'Coach Rodney',
+      date: '2026-09-12',
+      title: 'Welcome to the New Season!',
+      text: 'Welcome players and families! Please check the snack schedule and sign up for an upcoming game.'
+    }
+  ],
+  signups: {
+    snacks: [
+      { id: 'snack-1', gameDate: '2026-09-19', opponent: 'Lightning', fruit: { name: '', email: '', uid: '' }, drinks: { name: '', email: '', uid: '' } },
+      { id: 'snack-2', gameDate: '2026-09-26', opponent: 'Tornadoes', fruit: { name: '', email: '', uid: '' }, drinks: { name: '', email: '', uid: '' } },
+      { id: 'snack-3', gameDate: '2026-10-03', opponent: 'Strikers', fruit: { name: '', email: '', uid: '' }, drinks: { name: '', email: '', uid: '' } }
+    ],
+    committees: [
+      { id: 'comm-party', title: 'End-of-Season Party Committee', desc: 'Help organize food, venue, and fun for our end-of-year team celebration.', max: 3, members: [] },
+      { id: 'comm-trophy', title: 'Trophy & Awards Coordinator', desc: 'Order team participation trophies and coach appreciation gift.', max: 2, members: [] },
+      { id: 'comm-bench', title: 'Game-Day Canopy & Bench Helper', desc: 'Assist with team sideline shade setup and keeping player water bottles filled.', max: 2, members: [] }
+    ]
+  }
+};
+
+function getEffectiveRole() {
+  return previewRole || userRole;
+}
+function isCoach() {
+  const r = getEffectiveRole();
+  return r === 'head_coach' || r === 'assistant_coach';
+}
+function canEditPlans() {
+  const r = getEffectiveRole();
+  if (r === 'head_coach') return true;
+  if (r === 'assistant_coach' && teamRoles.permissions && teamRoles.permissions.assistantCanEditPlans) return true;
+  return false;
+}
 
 const POSITIONS = ['G','LD','RD','LW','RW','M'];
 const DEFAULT_PRESETS = [
@@ -690,31 +981,139 @@ function loadState() {
 
 function saveState() {
   localStorage.setItem('soccer-coach-state', JSON.stringify(state));
-  // Sync to Firebase
+  if (!isCoach()) return; // Only coaches publish live/coach state
+
+  // Build liveGame snapshot for parents
+  const benchPlayers = [];
+  state.players.forEach((p, idx) => {
+    if (!Object.values(state.assignments).includes(idx) && (!state.absent || !state.absent.includes(idx))) {
+      benchPlayers.push(p.name);
+    }
+  });
+  const absentPlayers = (state.absent || []).map(idx => state.players[idx] ? state.players[idx].name : '').filter(Boolean);
+  
+  const liveAssignments = {};
+  POSITIONS.forEach(pos => {
+    const idx = state.assignments[pos];
+    if (idx !== undefined && idx !== null && state.players[idx]) {
+      liveAssignments[pos] = state.players[idx].name;
+    }
+  });
+
+  liveGame = {
+    assignments: liveAssignments,
+    bench: benchPlayers,
+    absent: absentPlayers,
+    currentQuarter: currentQuarter,
+    timer: { seconds: timerSeconds, running: timerRunning, countUp: timerCountUp, updatedAt: Date.now() },
+    score: { us: 0, them: 0, opponent: (state.opponents && state.opponents.length ? state.opponents[0].name : '') },
+    updatedAt: Date.now()
+  };
+
   firebaseIgnoreCount++;
-  dbRef.set(state).catch(e => console.warn('Firebase save error:', e));
+  // 1. Publish liveGame for parents
+  dbRefLive.set(liveGame).catch(e => console.warn('liveGame save error:', e));
+
+  // 2. Publish coachData
+  const coachData = {
+    gamePlans: state.gamePlans || [],
+    activeGamePlan: state.activeGamePlan,
+    swapPresets: state.swapPresets || [],
+    gameLog: state.gameLog || [],
+    opponents: state.opponents || [],
+    presets: state.presets || [],
+    players: state.players || [],
+    assignments: state.assignments || {},
+    absent: state.absent || [],
+    currentQuarter: currentQuarter
+  };
+  dbRefCoach.set(coachData).catch(e => console.warn('coachData save error:', e));
+
+  // 3. Keep legacy gameState in sync for older sessions
+  dbRefLegacy.set(state).catch(e => console.warn('legacy gameState save error:', e));
 }
 
-// Listen for remote changes from Firebase
-dbRef.on('value', (snapshot) => {
-  if (firebaseIgnoreCount > 0) { firebaseIgnoreCount--; return; }
-  const data = snapshot.val();
-  if (data && data.players) {
-    state = data;
-    if (!state.gamePlans) state.gamePlans = [];
-    if (!state.absent) state.absent = [];
-    if (!state.swapPresets) state.swapPresets = [];
-    if (!state.assignments) state.assignments = {};
-    if (state.activeGamePlan === undefined) state.activeGamePlan = null;
-    if (state.currentQuarter === undefined) state.currentQuarter = 0;
-    if (!state.gameLog) state.gameLog = [];
-    if (!state.opponents) state.opponents = [];
-    normalizeMoveData(state);
-    currentQuarter = state.currentQuarter;
-    localStorage.setItem('soccer-coach-state', JSON.stringify(state));
-    if (firebaseReady) render();
+let liveListenerAttached = false;
+let coachListenerAttached = false;
+let hubListenerAttached = false;
+let rolesListenerAttached = false;
+
+function setupFirebaseListeners() {
+  // Roles listener (for role admin and permissions)
+  if (!rolesListenerAttached) {
+    dbRefRoles.on('value', (snap) => {
+      const val = snap.val();
+      if (val) {
+        if (val.headCoachEmail) teamRoles.headCoachEmail = val.headCoachEmail;
+        if (Array.isArray(val.assistantCoachEmails)) teamRoles.assistantCoachEmails = val.assistantCoachEmails;
+        if (val.permissions) teamRoles.permissions = val.permissions;
+        if (val.users) teamRoles.users = val.users;
+      }
+      if (currentUser) updateRoleFromAuth(currentUser);
+      renderRolesAdminUI();
+    });
+    rolesListenerAttached = true;
   }
-});
+
+  // TeamHub listener (schedule, announcements, sign-ups)
+  if (!hubListenerAttached) {
+    dbRefHub.on('value', (snap) => {
+      const val = snap.val();
+      if (val) {
+        if (val.nextEvent) teamHub.nextEvent = val.nextEvent;
+        if (Array.isArray(val.announcements)) teamHub.announcements = val.announcements;
+        if (val.signups) teamHub.signups = val.signups;
+        renderParentPortal();
+        renderCoachHub();
+      }
+    });
+    hubListenerAttached = true;
+  }
+
+  // LiveGame listener (all users, especially parents)
+  if (!liveListenerAttached) {
+    dbRefLive.on('value', (snap) => {
+      const val = snap.val();
+      if (val) {
+        liveGame = val;
+        renderParentPortal();
+      }
+    });
+    liveListenerAttached = true;
+  }
+
+  // CoachData listener: STRICT DATA ISOLATION (Parents NEVER listen to coachData)
+  if (isCoach()) {
+    if (!coachListenerAttached) {
+      dbRefCoach.on('value', (snap) => {
+        if (firebaseIgnoreCount > 0) { firebaseIgnoreCount--; return; }
+        const data = snap.val();
+        if (data && data.players) {
+          state.gamePlans = data.gamePlans || [];
+          state.absent = data.absent || [];
+          state.swapPresets = data.swapPresets || [];
+          state.assignments = data.assignments || {};
+          state.activeGamePlan = data.activeGamePlan !== undefined ? data.activeGamePlan : null;
+          state.currentQuarter = data.currentQuarter !== undefined ? data.currentQuarter : 0;
+          state.gameLog = data.gameLog || [];
+          state.opponents = data.opponents || [];
+          state.players = data.players || state.players;
+          normalizeMoveData(state);
+          currentQuarter = state.currentQuarter;
+          localStorage.setItem('soccer-coach-state', JSON.stringify(state));
+          if (appMode === 'game') render();
+        }
+      });
+      coachListenerAttached = true;
+    }
+  } else {
+    // If spectator / parent, detach coach listener
+    if (coachListenerAttached) {
+      dbRefCoach.off();
+      coachListenerAttached = false;
+    }
+  }
+}
 firebaseReady = true;
 
 function getPosCoords(pos) {
@@ -1287,13 +1686,15 @@ function openSettings() { renderSettingsPanel(); document.getElementById('settin
 function closeSettings() { saveSettings(); document.getElementById('settings-overlay').classList.remove('open'); if (appMode === 'game') render(); }
 
 function switchSettingsTab(tab) {
-  const order = ['general', 'plans', 'log'];
+  const order = ['general', 'plans', 'log', 'roles'];
   document.querySelectorAll('.settings-tab').forEach((t, i) => t.classList.toggle('active', order[i] === tab));
   document.getElementById('tab-general').classList.toggle('active', tab === 'general');
   document.getElementById('tab-plans').classList.toggle('active', tab === 'plans');
   document.getElementById('tab-log').classList.toggle('active', tab === 'log');
+  document.getElementById('tab-roles').classList.toggle('active', tab === 'roles');
   if (tab === 'plans') renderGamePlansUI();
   if (tab === 'log') renderGameLogUI();
+  if (tab === 'roles') renderRolesAdminUI();
 }
 
 function renderSettingsPanel() {
@@ -1320,7 +1721,22 @@ function saveSettings() {
 // --- Game Plans UI ---
 function renderGamePlansUI() {
   const ld = document.getElementById('gp-list'); ld.innerHTML = '';
-  state.gamePlans.forEach((plan, i) => { const r = document.createElement('div'); r.className = 'setting-row'; r.style.marginBottom = '8px'; const a = state.activeGamePlan === i; r.innerHTML = `<span style="flex:1;font-weight:600;${a ? 'color:#27ae60' : ''}">${escHtml(plan.name)} ${a ? '(Active)' : ''}</span><button class="gp-btn gp-load" onclick="loadGamePlanSettings(${i})">Load</button><button class="gp-btn gp-save" onclick="editGamePlan(${i})" style="background:#f39c12">Edit</button><button class="gp-btn gp-delete" onclick="deleteGamePlan(${i})">Del</button>`; ld.appendChild(r); });
+  const canEdit = canEditPlans();
+  const addBtn = document.querySelector('#tab-plans .add-btn');
+  if (addBtn) addBtn.style.display = canEdit ? 'block' : 'none';
+
+  state.gamePlans.forEach((plan, i) => {
+    const r = document.createElement('div');
+    r.className = 'setting-row';
+    r.style.marginBottom = '8px';
+    const a = state.activeGamePlan === i;
+    r.innerHTML = `
+      <span style="flex:1;font-weight:600;${a ? 'color:#27ae60' : ''}">${escHtml(plan.name)} ${a ? '(Active)' : ''}</span>
+      <button class="gp-btn gp-load" onclick="loadGamePlanSettings(${i})">Load</button>
+      ${canEdit ? `<button class="gp-btn gp-save" onclick="editGamePlan(${i})" style="background:#f39c12">Edit</button><button class="gp-btn gp-delete" onclick="deleteGamePlan(${i})">Del</button>` : `<span style="font-size:11px;color:#888;padding:4px 6px">View-Only</span>`}
+    `;
+    ld.appendChild(r);
+  });
 }
 function newGamePlan() {
   editingPlanIdx = -1; gpEditQ = 1; gpFirstPick = null; gpMoveMode = null;
@@ -1716,6 +2132,10 @@ function showGpSaveToast(msg) {
 }
 
 function saveGamePlan() {
+  if (!canEditPlans()) {
+    alert('Assistant coaches are currently set to view-only. Head Coach permission required to save plans.');
+    return;
+  }
   const name = document.getElementById('gp-name').value.trim() || 'Untitled';
   const quarters = buildPlanQuartersFromEditor();
   if (editingPlanIdx >= 0) state.gamePlans[editingPlanIdx] = { name, quarters }; else { state.gamePlans.push({ name, quarters }); editingPlanIdx = state.gamePlans.length - 1; }
@@ -1724,6 +2144,10 @@ function saveGamePlan() {
 }
 
 function saveGamePlanAsNew() {
+  if (!canEditPlans()) {
+    alert('Assistant coaches are currently set to view-only.');
+    return;
+  }
   const current = document.getElementById('gp-name').value.trim();
   const suggested = current ? current + ' (copy)' : 'Plan ' + String.fromCharCode(65 + state.gamePlans.length);
   const name = prompt('Save as new — plan name:', suggested);
@@ -1739,6 +2163,10 @@ function saveGamePlanAsNew() {
 
 function loadGamePlanSettings(idx) { loadGamePlanByIdx(idx); closeSettings(); }
 function deleteGamePlan(idx) {
+  if (!canEditPlans()) {
+    alert('Assistant coaches are currently set to view-only.');
+    return;
+  }
   const planName = state.gamePlans[idx] ? state.gamePlans[idx].name : 'this plan';
   if (!confirm('Delete "' + planName + '"? This cannot be undone.')) return;
   if (state.activeGamePlan === idx) state.activeGamePlan = null; else if (state.activeGamePlan != null && state.activeGamePlan > idx) state.activeGamePlan--;
@@ -2080,32 +2508,58 @@ function loadPracticeState() {
 }
 function savePracticeState() { localStorage.setItem('soccer-coach-practice', JSON.stringify(pmState)); }
 
-// --- Navigation ---
+// --- Navigation & Role Routing ---
 function goHome() {
   if (timerRunning) toggleTimer();
   document.getElementById('game-mode').classList.remove('active');
   document.getElementById('practice-mode').classList.remove('active');
-  document.getElementById('home-screen').classList.remove('hidden');
-  document.getElementById('nav-buttons').classList.add('visible');
-  document.getElementById('nav-close-btn').style.display = 'none';
-  appMode = 'home';
+  document.getElementById('team-hub-mode').classList.remove('active');
+
+  const role = getEffectiveRole();
+  if (role === 'parent' || role === 'guest') {
+    document.getElementById('home-screen').classList.add('hidden');
+    document.getElementById('parent-portal').classList.add('active');
+    document.getElementById('nav-close-btn').style.display = 'none';
+    appMode = 'parent_portal';
+    renderParentPortal();
+  } else {
+    document.getElementById('parent-portal').classList.remove('active');
+    document.getElementById('home-screen').classList.remove('hidden');
+    document.getElementById('nav-close-btn').style.display = 'none';
+    appMode = 'home';
+  }
 }
 
 function goToMode(mode) {
+  const role = getEffectiveRole();
+  if (role === 'parent' || role === 'guest') {
+    if (mode === 'hub') switchParentTab('hub');
+    else if (mode === 'signups') switchParentTab('signups');
+    else switchParentTab('field');
+    return;
+  }
+
   document.getElementById('home-screen').classList.add('hidden');
   document.getElementById('game-mode').classList.remove('active');
   document.getElementById('practice-mode').classList.remove('active');
+  document.getElementById('parent-portal').classList.remove('active');
+  document.getElementById('team-hub-mode').classList.remove('active');
   document.getElementById('nav-buttons').classList.add('visible');
   document.getElementById('nav-close-btn').style.display = '';
+
   if (mode === 'game') {
     appMode = 'game';
     document.getElementById('game-mode').classList.add('active');
     render();
-  } else {
+  } else if (mode === 'practice') {
     appMode = 'practice';
     document.getElementById('practice-mode').classList.add('active');
     if (!pmCurrentDrill) pmSwitchTab('library');
     else pmRenderDesigner();
+  } else if (mode === 'hub' || mode === 'signups') {
+    appMode = 'hub';
+    document.getElementById('team-hub-mode').classList.add('active');
+    switchCoachHubTab(mode === 'signups' ? 'snacks' : 'schedule');
   }
 }
 
@@ -2184,6 +2638,7 @@ function pmEditDrill(id) {
 }
 
 function pmDuplicateDrill(id) {
+  if (!canEditPlans()) { alert('Assistant coaches are view-only.'); return; }
   const drill = pmState.drills.find(d => d.id === id);
   if (!drill) return;
   const copy = JSON.parse(JSON.stringify(drill));
@@ -2192,12 +2647,14 @@ function pmDuplicateDrill(id) {
 }
 
 function pmDeleteDrill(id) {
+  if (!canEditPlans()) { alert('Assistant coaches are view-only.'); return; }
   pmState.drills = pmState.drills.filter(d => d.id !== id);
   pmState.sessions.forEach(s => { s.drills = s.drills.filter(d => d.drillId !== id); });
   savePracticeState(); pmRenderLibrary();
 }
 
 function pmSaveDrill() {
+  if (!canEditPlans()) { alert('Assistant coaches are view-only. Head Coach permission required to edit drills.'); return; }
   if (!pmCurrentDrill) return;
   const idx = pmState.drills.findIndex(d => d.id === pmCurrentDrill.id);
   if (idx >= 0) pmState.drills[idx] = JSON.parse(JSON.stringify(pmCurrentDrill));
@@ -2208,6 +2665,7 @@ function pmSaveDrill() {
 }
 
 function pmRenameDrill() {
+  if (!canEditPlans()) { alert('Assistant coaches are view-only.'); return; }
   if (!pmCurrentDrill) return;
   const name = prompt('Drill name:', pmCurrentDrill.name);
   if (name && name.trim()) { pmCurrentDrill.name = name.trim(); document.getElementById('pm-drill-title').textContent = pmCurrentDrill.name; }
@@ -2971,7 +3429,629 @@ function pmImportDrill() {
   input.click();
 }
 
-// --- Init ---
+// --- Auth & Role Management Logic ---
+function updateRoleFromAuth(user) {
+  if (!user) {
+    userRole = 'guest';
+  } else {
+    const email = (user.email || '').toLowerCase().trim();
+    const headEmail = (teamRoles.headCoachEmail || 'rmagee3190@gmail.com').toLowerCase().trim();
+    
+    if (email === headEmail || email === 'rmagee3190@gmail.com') {
+      userRole = 'head_coach';
+    } else if (teamRoles.assistantCoachEmails && teamRoles.assistantCoachEmails.map(e => e.toLowerCase().trim()).includes(email)) {
+      userRole = 'assistant_coach';
+    } else {
+      userRole = 'parent';
+    }
+
+    const sanitizedEmail = email.replace(/[\.\$#\[\]\/]/g, '_');
+    if (!teamRoles.users) teamRoles.users = {};
+    teamRoles.users[sanitizedEmail] = {
+      email: user.email,
+      name: user.displayName || user.email.split('@')[0],
+      photoURL: user.photoURL || '',
+      role: userRole,
+      lastLogin: Date.now()
+    };
+    if (userRole === 'head_coach') {
+      dbRefRoles.child('users/' + sanitizedEmail).set(teamRoles.users[sanitizedEmail]).catch(() => {});
+    }
+  }
+
+  updateHeaderUI();
+  setupFirebaseListeners();
+  applyRoleRouting();
+}
+
+function updateHeaderUI() {
+  const role = getEffectiveRole();
+  const badge = document.getElementById('header-role-badge');
+  if (badge) {
+    badge.className = 'role-badge role-' + role;
+    if (role === 'head_coach') badge.textContent = '👑 Head Coach';
+    else if (role === 'assistant_coach') badge.textContent = '📋 Assistant';
+    else if (role === 'parent') badge.textContent = '👨‍👩‍👧 Parent';
+    else badge.textContent = 'Spectator';
+  }
+
+  const previewPill = document.getElementById('preview-pill');
+  if (previewPill) {
+    if (previewRole) {
+      previewPill.style.display = 'flex';
+      previewPill.innerHTML = `PREVIEW: ${previewRole === 'parent' ? 'PARENT' : 'ASSISTANT'} <span style="font-size:10px;margin-left:2px">✕ EXIT</span>`;
+    } else {
+      previewPill.style.display = 'none';
+    }
+  }
+
+  const userChip = document.getElementById('header-user');
+  if (userChip) {
+    if (currentUser) {
+      const avatar = currentUser.photoURL 
+        ? `<img src="${currentUser.photoURL}" class="user-avatar" alt="Avatar">`
+        : `<div class="user-avatar-fallback">${(currentUser.displayName || currentUser.email || 'U')[0].toUpperCase()}</div>`;
+      const name = currentUser.displayName ? currentUser.displayName.split(' ')[0] : currentUser.email.split('@')[0];
+      userChip.innerHTML = `
+        ${avatar}
+        <span class="user-name">${escHtml(name)}</span>
+        <button onclick="signOutGoogle()" class="auth-btn" title="Sign Out">Sign Out</button>
+      `;
+    } else {
+      userChip.innerHTML = `
+        <button onclick="signInWithGoogle()" class="auth-btn auth-btn-google">
+          <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+          Sign In
+        </button>
+      `;
+    }
+  }
+}
+
+function signInWithGoogle() {
+  const provider = new firebase.auth.GoogleAuthProvider();
+  auth.signInWithPopup(provider).catch(err => {
+    console.warn('Popup signin error, trying redirect:', err);
+    if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
+      auth.signInWithRedirect(provider);
+    } else {
+      alert('Sign-In Note: ' + err.message + '\n\nReminder: Enable Google Sign-In under Firebase Console > Authentication > Sign-in method.');
+    }
+  });
+}
+
+function signOutGoogle() {
+  auth.signOut().then(() => {
+    previewRole = null;
+    currentUser = null;
+    userRole = 'guest';
+    updateHeaderUI();
+    applyRoleRouting();
+  });
+}
+
+function setRolePreview(role) {
+  if (userRole !== 'head_coach' && role !== null) {
+    alert('Role preview is exclusive to the Head Coach.');
+    return;
+  }
+  previewRole = role;
+  updateRoleFromAuth(currentUser);
+  if (role === 'parent') {
+    applyRoleRouting();
+  } else {
+    goHome();
+  }
+}
+
+function applyRoleRouting() {
+  const role = getEffectiveRole();
+  const homeScreen = document.getElementById('home-screen');
+  const parentPortal = document.getElementById('parent-portal');
+  const gameMode = document.getElementById('game-mode');
+  const practiceMode = document.getElementById('practice-mode');
+  const teamHubMode = document.getElementById('team-hub-mode');
+
+  if (role === 'parent' || role === 'guest') {
+    homeScreen.classList.add('hidden');
+    gameMode.classList.remove('active');
+    practiceMode.classList.remove('active');
+    teamHubMode.classList.remove('active');
+    parentPortal.classList.add('active');
+    document.getElementById('nav-buttons').classList.add('visible');
+    document.getElementById('nav-close-btn').style.display = 'none';
+    appMode = 'parent_portal';
+    renderParentPortal();
+  } else {
+    parentPortal.classList.remove('active');
+    if (appMode === 'parent_portal') {
+      goHome();
+    } else if (appMode === 'home') {
+      homeScreen.classList.remove('hidden');
+    }
+  }
+}
+
+// --- Parent Portal Rendering ---
+let currentParentTab = 'field';
+function switchParentTab(tab) {
+  currentParentTab = tab;
+  document.querySelectorAll('.pp-tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.pp-tab-content').forEach(c => c.classList.remove('active'));
+  
+  const btn = document.getElementById('pp-btn-' + tab);
+  if (btn) btn.classList.add('active');
+  const panel = document.getElementById('pp-tab-' + tab);
+  if (panel) panel.classList.add('active');
+
+  renderParentPortal();
+}
+
+function renderParentPortal() {
+  if (currentParentTab === 'field') renderParentField();
+  else if (currentParentTab === 'hub') renderParentHub();
+  else if (currentParentTab === 'signups') renderParentSignups();
+}
+
+function renderParentField() {
+  const container = document.getElementById('pp-field-positions');
+  if (!container) return;
+  container.innerHTML = '';
+
+  const q = liveGame.currentQuarter !== undefined ? (liveGame.currentQuarter + 1) : 1;
+  const qEl = document.getElementById('pp-quarter-text');
+  if (qEl) qEl.textContent = 'Q' + q + (liveGame.timer && liveGame.timer.running ? ' Live' : ' Lineup');
+
+  const sEl = document.getElementById('pp-score-text');
+  if (sEl) {
+    sEl.textContent = liveGame.score && liveGame.score.opponent 
+      ? `Emma Soccer vs ${liveGame.score.opponent}` 
+      : 'Emma Soccer Live Pitch';
+  }
+
+  const tEl = document.getElementById('pp-timer-text');
+  if (tEl) {
+    const s = liveGame.timer ? liveGame.timer.seconds : 0;
+    tEl.textContent = formatTime(s);
+  }
+
+  POSITIONS.forEach(pos => {
+    const coords = POS_COORDS_NORMAL[pos];
+    const playerName = liveGame.assignments ? liveGame.assignments[pos] : null;
+    const el = document.createElement('div');
+    el.className = 'field-player';
+    el.style.left = coords.x + '%';
+    el.style.top = coords.y + '%';
+    if (playerName) {
+      el.innerHTML = `<div class="dot">${pos}</div><div class="player-name">${escHtml(playerName)}</div>`;
+    } else {
+      el.innerHTML = `<div class="dot" style="background:#444;opacity:0.6">${pos}</div><div class="player-name" style="color:#888">—</div>`;
+    }
+    container.appendChild(el);
+  });
+
+  const benchContainer = document.getElementById('pp-bench-list');
+  if (benchContainer) {
+    benchContainer.innerHTML = '';
+    const bench = liveGame.bench || [];
+    if (bench.length === 0) {
+      benchContainer.innerHTML = '<span style="font-size:12px;color:#777">All active players currently on field</span>';
+    } else {
+      bench.forEach(name => {
+        const b = document.createElement('div');
+        b.className = 'bench-player';
+        b.style.cursor = 'default';
+        b.textContent = name;
+        benchContainer.appendChild(b);
+      });
+    }
+  }
+}
+
+function renderParentHub() {
+  const container = document.getElementById('pp-hub-cards');
+  if (!container) return;
+  
+  let html = '';
+  const ev = teamHub.nextEvent;
+  if (ev) {
+    html += `
+      <div class="hub-card">
+        <div class="hub-card-header">
+          <div class="hub-card-title">⚽ NEXT GAME: vs ${escHtml(ev.opponent || 'TBD')}</div>
+          <span class="hub-badge hub-badge-next">Upcoming</span>
+        </div>
+        <div class="hub-row">📅 <b>${escHtml(ev.date || '')} at ${escHtml(ev.time || '')}</b> (Arrive at <b>${escHtml(ev.arrivalTime || '')}</b>)</div>
+        <div class="hub-row">📍 <b>${escHtml(ev.location || '')}</b> ${ev.locationUrl ? `<a href="${escAttr(ev.locationUrl)}" target="_blank">🗺️ Open Map</a>` : ''}</div>
+        <div class="hub-row">👕 Uniform: <span class="hub-badge hub-badge-jersey">${escHtml(ev.jerseyColor || 'Home Green')}</span></div>
+        ${ev.notes ? `<div class="hub-row" style="margin-top:4px;font-style:italic;color:#bbb">"${escHtml(ev.notes)}"</div>` : ''}
+      </div>
+    `;
+  }
+
+  const nextSnack = teamHub.signups && teamHub.signups.snacks ? teamHub.signups.snacks[0] : null;
+  if (nextSnack) {
+    const fruitWho = nextSnack.fruit && nextSnack.fruit.name ? nextSnack.fruit.name : '— Need Volunteer —';
+    const drinkWho = nextSnack.drinks && nextSnack.drinks.name ? nextSnack.drinks.name : '— Need Volunteer —';
+    html += `
+      <div class="hub-card" style="border-left:4px solid #f39c12">
+        <div class="hub-card-header">
+          <div class="hub-card-title">🍊 Snack Duty for ${escHtml(nextSnack.gameDate)} (vs ${escHtml(nextSnack.opponent)})</div>
+        </div>
+        <div class="hub-row">🍊 Half-Time Fruit: <b>${escHtml(fruitWho)}</b></div>
+        <div class="hub-row">🧃 Post-Game Drinks/Snacks: <b>${escHtml(drinkWho)}</b></div>
+      </div>
+    `;
+  }
+
+  const anns = teamHub.announcements || [];
+  if (anns.length > 0) {
+    html += `
+      <div class="hub-card">
+        <div class="hub-card-header">
+          <div class="hub-card-title">📢 Team Announcements</div>
+        </div>
+    `;
+    anns.forEach(a => {
+      html += `
+        <div style="background:#0f1a30;padding:10px;border-radius:8px;margin-top:6px;border:1px solid #0f3460">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:#e94560">
+            <span>${escHtml(a.title)}</span>
+            <span style="color:#888">${escHtml(a.date)}</span>
+          </div>
+          <div style="font-size:13px;color:#ddd;margin-top:4px">${escHtml(a.text)}</div>
+          <div style="font-size:11px;color:#888;margin-top:4px">— ${escHtml(a.author || 'Coach')}</div>
+        </div>
+      `;
+    });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+}
+
+function renderParentSignups() {
+  const container = document.getElementById('pp-signups-list');
+  if (!container) return;
+
+  let html = `<div style="font-size:14px;font-weight:800;color:#fff;margin-bottom:8px">🍊 Game-Day Snack Schedule</div>`;
+
+  const snacks = (teamHub.signups && teamHub.signups.snacks) || [];
+  const currentUid = currentUser ? currentUser.uid : null;
+  const currentEmail = currentUser ? currentUser.email : null;
+
+  snacks.forEach((item, sIdx) => {
+    const isFruitMe = currentUid && item.fruit && (item.fruit.uid === currentUid || item.fruit.email === currentEmail);
+    const isDrinkMe = currentUid && item.drinks && (item.drinks.uid === currentUid || item.drinks.email === currentEmail);
+
+    html += `
+      <div class="signup-card">
+        <div class="signup-date-title">Game ${sIdx + 1}: ${escHtml(item.gameDate)} vs ${escHtml(item.opponent)}</div>
+        
+        <div class="signup-slot">
+          <div class="signup-slot-info">
+            <span class="slot-icon">🍊</span>
+            <div>
+              <div>Half-Time Fruit</div>
+              <div style="font-size:11px;color:#aaa">${item.fruit && item.fruit.name ? `Claimed by: <b>${escHtml(item.fruit.name)}</b>` : 'Fresh sliced fruit (oranges/watermelon)'}</div>
+            </div>
+          </div>
+          <div>
+            ${item.fruit && item.fruit.name ? (
+              isFruitMe || isCoach() ? `<button class="release-btn" onclick="releaseSnackSlot('${item.id}','fruit')">Release</button>` : `<span class="claimed-badge">Claimed</span>`
+            ) : (
+              `<button class="claim-btn" onclick="claimSnackSlot('${item.id}','fruit')">+ Sign Up</button>`
+            )}
+          </div>
+        </div>
+
+        <div class="signup-slot">
+          <div class="signup-slot-info">
+            <span class="slot-icon">🧃</span>
+            <div>
+              <div>Post-Game Drinks & Snacks</div>
+              <div style="font-size:11px;color:#aaa">${item.drinks && item.drinks.name ? `Claimed by: <b>${escHtml(item.drinks.name)}</b>` : 'Individual juice boxes & snack bags'}</div>
+            </div>
+          </div>
+          <div>
+            ${item.drinks && item.drinks.name ? (
+              isDrinkMe || isCoach() ? `<button class="release-btn" onclick="releaseSnackSlot('${item.id}','drinks')">Release</button>` : `<span class="claimed-badge">Claimed</span>`
+            ) : (
+              `<button class="claim-btn" onclick="claimSnackSlot('${item.id}','drinks')">+ Sign Up</button>`
+            )}
+          </div>
+        </div>
+      </div>
+    `;
+  });
+
+  html += `<div style="font-size:14px;font-weight:800;color:#fff;margin-top:16px;margin-bottom:8px">🤝 Team Volunteer Committees</div>`;
+  const comms = (teamHub.signups && teamHub.signups.committees) || [];
+  comms.forEach(c => {
+    const members = c.members || [];
+    const isMemberMe = currentUid && members.some(m => m.uid === currentUid || m.email === currentEmail);
+    const spotsLeft = Math.max(0, (c.max || 3) - members.length);
+
+    html += `
+      <div class="signup-card">
+        <div style="display:flex;justify-content:space-between;align-items:center">
+          <div style="font-size:13px;font-weight:800;color:#fff">${escHtml(c.title)}</div>
+          <span style="font-size:11px;color:#f39c12;font-weight:700">${spotsLeft} spot${spotsLeft === 1 ? '' : 's'} left</span>
+        </div>
+        <div style="font-size:12px;color:#aaa">${escHtml(c.desc)}</div>
+        <div style="font-size:12px;color:#ddd;display:flex;gap:6px;flex-wrap:wrap">
+          <b>Volunteers:</b> ${members.length ? members.map(m => `<span style="background:#0f1a30;padding:2px 7px;border-radius:4px;border:1px solid #0f3460">${escHtml(m.name)}</span>`).join('') : '<span style="color:#777">None yet</span>'}
+        </div>
+        <div style="text-align:right">
+          ${isMemberMe ? (
+            `<button class="release-btn" onclick="leaveCommittee('${c.id}')">Leave Committee</button>`
+          ) : spotsLeft > 0 ? (
+            `<button class="claim-btn" onclick="joinCommittee('${c.id}')">+ Volunteer</button>`
+          ) : (
+            `<span class="claimed-badge">Full</span>`
+          )}
+        </div>
+      </div>
+    `;
+  });
+
+  container.innerHTML = html;
+}
+
+function claimSnackSlot(gameId, slotType) {
+  if (!currentUser) {
+    alert('Please sign in with your Google account at the top to sign up for snacks.');
+    signInWithGoogle();
+    return;
+  }
+  const item = teamHub.signups.snacks.find(s => s.id === gameId);
+  if (!item) return;
+  item[slotType] = {
+    uid: currentUser.uid,
+    name: currentUser.displayName || currentUser.email.split('@')[0],
+    email: currentUser.email,
+    claimedAt: Date.now()
+  };
+  saveTeamHub();
+  renderParentSignups();
+  renderParentHub();
+}
+
+function releaseSnackSlot(gameId, slotType) {
+  const item = teamHub.signups.snacks.find(s => s.id === gameId);
+  if (!item) return;
+  if (!confirm('Release your snack slot?')) return;
+  item[slotType] = { name: '', email: '', uid: '' };
+  saveTeamHub();
+  renderParentSignups();
+  renderParentHub();
+}
+
+function joinCommittee(commId) {
+  if (!currentUser) {
+    alert('Please sign in with your Google account at the top to volunteer.');
+    signInWithGoogle();
+    return;
+  }
+  const comm = teamHub.signups.committees.find(c => c.id === commId);
+  if (!comm) return;
+  if (!comm.members) comm.members = [];
+  if (comm.members.some(m => m.uid === currentUser.uid)) return;
+  comm.members.push({
+    uid: currentUser.uid,
+    name: currentUser.displayName || currentUser.email.split('@')[0],
+    email: currentUser.email,
+    joinedAt: Date.now()
+  });
+  saveTeamHub();
+  renderParentSignups();
+}
+
+function leaveCommittee(commId) {
+  const comm = teamHub.signups.committees.find(c => c.id === commId);
+  if (!comm || !comm.members) return;
+  if (!confirm('Leave this volunteer committee?')) return;
+  comm.members = comm.members.filter(m => m.uid !== currentUser.uid && m.email !== currentUser.email);
+  saveTeamHub();
+  renderParentSignups();
+}
+
+function saveTeamHub() {
+  localStorage.setItem('soccer-coach-teamhub', JSON.stringify(teamHub));
+  dbRefHub.set(teamHub).catch(e => console.warn('teamHub save error:', e));
+}
+
+// --- Coach Team Hub Mode ---
+let currentCoachHubTab = 'schedule';
+function switchCoachHubTab(tab) {
+  currentCoachHubTab = tab;
+  ['schedule', 'announcements', 'snacks'].forEach(t => {
+    const btn = document.getElementById('ch-tab-btn-' + t);
+    if (btn) btn.classList.toggle('active', t === tab);
+  });
+  renderCoachHub();
+}
+
+function renderCoachHub() {
+  const container = document.getElementById('coach-hub-content');
+  if (!container) return;
+
+  if (currentCoachHubTab === 'schedule') {
+    const ev = teamHub.nextEvent || {};
+    container.innerHTML = `
+      <div class="hub-card">
+        <div class="hub-card-header">
+          <div class="hub-card-title">⚽ Edit Upcoming Match / Event</div>
+          <button class="gp-btn gp-save" onclick="saveNextEventFromForm()">Save Event</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">
+          <div><label style="font-size:11px;color:#aaa">Opponent</label><input type="text" id="ev-opponent" value="${escAttr(ev.opponent||'')}" style="width:100%;background:#0f1a30;border:1px solid #0f3460;color:#fff;padding:6px;border-radius:4px"></div>
+          <div><label style="font-size:11px;color:#aaa">Uniform Color</label><input type="text" id="ev-jersey" value="${escAttr(ev.jerseyColor||'Green')}" style="width:100%;background:#0f1a30;border:1px solid #0f3460;color:#fff;padding:6px;border-radius:4px"></div>
+          <div><label style="font-size:11px;color:#aaa">Game Date</label><input type="date" id="ev-date" value="${escAttr(ev.date||'')}" style="width:100%;background:#0f1a30;border:1px solid #0f3460;color:#fff;padding:6px;border-radius:4px"></div>
+          <div><label style="font-size:11px;color:#aaa">Game Time</label><input type="time" id="ev-time" value="${escAttr(ev.time||'')}" style="width:100%;background:#0f1a30;border:1px solid #0f3460;color:#fff;padding:6px;border-radius:4px"></div>
+          <div><label style="font-size:11px;color:#aaa">Arrival Time</label><input type="time" id="ev-arrival" value="${escAttr(ev.arrivalTime||'')}" style="width:100%;background:#0f1a30;border:1px solid #0f3460;color:#fff;padding:6px;border-radius:4px"></div>
+          <div><label style="font-size:11px;color:#aaa">Field / Location</label><input type="text" id="ev-loc" value="${escAttr(ev.location||'')}" style="width:100%;background:#0f1a30;border:1px solid #0f3460;color:#fff;padding:6px;border-radius:4px"></div>
+        </div>
+        <div><label style="font-size:11px;color:#aaa">Coach Notes / Instructions</label><input type="text" id="ev-notes" value="${escAttr(ev.notes||'')}" style="width:100%;background:#0f1a30;border:1px solid #0f3460;color:#fff;padding:6px;border-radius:4px"></div>
+      </div>
+    `;
+  } else if (currentCoachHubTab === 'announcements') {
+    let annsHtml = `
+      <div class="hub-card">
+        <div class="hub-card-header">
+          <div class="hub-card-title">📢 Post New Announcement</div>
+          <button class="gp-btn gp-save" onclick="postCoachAnnouncement()">Post Broadcast</button>
+        </div>
+        <input type="text" id="new-ann-title" placeholder="Announcement Title" style="background:#0f1a30;border:1px solid #0f3460;color:#fff;padding:6px;border-radius:4px">
+        <textarea id="new-ann-text" placeholder="Message to parents and team..." style="background:#0f1a30;border:1px solid #0f3460;color:#fff;padding:6px;border-radius:4px;min-height:60px"></textarea>
+      </div>
+      <div style="font-size:14px;font-weight:800;color:#fff;margin-top:8px">Past Announcements</div>
+    `;
+    const anns = teamHub.announcements || [];
+    anns.forEach((a, idx) => {
+      annsHtml += `
+        <div class="hub-card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <b>${escHtml(a.title)}</b>
+            <button class="remove-btn" onclick="deleteCoachAnnouncement(${idx})">✕</button>
+          </div>
+          <div style="font-size:13px;color:#ccc">${escHtml(a.text)}</div>
+          <div style="font-size:11px;color:#888">${escHtml(a.date)} by ${escHtml(a.author)}</div>
+        </div>
+      `;
+    });
+    container.innerHTML = annsHtml;
+  } else {
+    // Snacks tab
+    renderParentSignups();
+    container.innerHTML = document.getElementById('pp-signups-list').innerHTML;
+  }
+}
+
+function saveNextEventFromForm() {
+  if (!teamHub.nextEvent) teamHub.nextEvent = {};
+  teamHub.nextEvent.opponent = document.getElementById('ev-opponent').value;
+  teamHub.nextEvent.jerseyColor = document.getElementById('ev-jersey').value;
+  teamHub.nextEvent.date = document.getElementById('ev-date').value;
+  teamHub.nextEvent.time = document.getElementById('ev-time').value;
+  teamHub.nextEvent.arrivalTime = document.getElementById('ev-arrival').value;
+  teamHub.nextEvent.location = document.getElementById('ev-loc').value;
+  teamHub.nextEvent.notes = document.getElementById('ev-notes').value;
+  saveTeamHub();
+  alert('Event saved and broadcasted to team!');
+}
+
+function postCoachAnnouncement() {
+  const title = document.getElementById('new-ann-title').value.trim();
+  const text = document.getElementById('new-ann-text').value.trim();
+  if (!title || !text) { alert('Please enter both title and text.'); return; }
+  if (!teamHub.announcements) teamHub.announcements = [];
+  teamHub.announcements.unshift({
+    id: 'ann_' + Date.now(),
+    title,
+    text,
+    date: new Date().toISOString().split('T')[0],
+    author: currentUser && currentUser.displayName ? currentUser.displayName : 'Coach Rodney'
+  });
+  saveTeamHub();
+  renderCoachHub();
+}
+
+function deleteCoachAnnouncement(idx) {
+  if (!confirm('Delete announcement?')) return;
+  teamHub.announcements.splice(idx, 1);
+  saveTeamHub();
+  renderCoachHub();
+}
+
+// --- Roles & Admin Management ---
+function onToggleAssistantEditPlans(checked) {
+  if (userRole !== 'head_coach') {
+    alert('Only the Head Coach can modify assistant permissions.');
+    return;
+  }
+  if (!teamRoles.permissions) teamRoles.permissions = {};
+  teamRoles.permissions.assistantCanEditPlans = checked;
+  saveTeamRoles();
+}
+
+function addAssistantCoachByInput() {
+  if (userRole !== 'head_coach') {
+    alert('Only the Head Coach can add assistant coaches.');
+    return;
+  }
+  const input = document.getElementById('new-assistant-email');
+  const email = (input.value || '').trim().toLowerCase();
+  if (!email || !email.includes('@')) {
+    alert('Please enter a valid email address.');
+    return;
+  }
+  if (!teamRoles.assistantCoachEmails) teamRoles.assistantCoachEmails = [];
+  if (!teamRoles.assistantCoachEmails.includes(email)) {
+    teamRoles.assistantCoachEmails.push(email);
+    saveTeamRoles();
+    renderRolesAdminUI();
+    input.value = '';
+  }
+}
+
+function removeAssistantCoach(email) {
+  if (userRole !== 'head_coach') {
+    alert('Only the Head Coach can remove assistant coaches.');
+    return;
+  }
+  if (!confirm('Remove ' + email + ' as assistant coach?')) return;
+  teamRoles.assistantCoachEmails = teamRoles.assistantCoachEmails.filter(e => e.toLowerCase() !== email.toLowerCase());
+  saveTeamRoles();
+  renderRolesAdminUI();
+}
+
+function saveTeamRoles() {
+  localStorage.setItem('soccer-coach-roles', JSON.stringify(teamRoles));
+  dbRefRoles.set(teamRoles).catch(e => console.warn('teamRoles save error:', e));
+}
+
+function renderRolesAdminUI() {
+  const permCheck = document.getElementById('perm-assistant-edit-plans');
+  if (permCheck) {
+    permCheck.checked = !!(teamRoles.permissions && teamRoles.permissions.assistantCanEditPlans);
+    permCheck.disabled = (userRole !== 'head_coach');
+  }
+  const headDisplay = document.getElementById('roles-head-coach-display');
+  if (headDisplay) {
+    headDisplay.textContent = teamRoles.headCoachEmail || 'Rmagee3190@gmail.com';
+  }
+  const list = document.getElementById('assistant-coaches-list');
+  if (list) {
+    const assistants = teamRoles.assistantCoachEmails || [];
+    if (assistants.length === 0) {
+      list.innerHTML = '<span style="font-size:12px;color:#777">No assistant coaches assigned yet.</span>';
+    } else {
+      list.innerHTML = assistants.map(e => `
+        <div style="display:flex;align-items:center;justify-content:space-between;background:#0f1a30;padding:6px 10px;border-radius:5px;border:1px solid #0f3460;font-size:12px">
+          <span>📋 ${escHtml(e)}</span>
+          ${userRole === 'head_coach' ? `<button class="remove-btn" onclick="removeAssistantCoach('${escAttr(e)}')">✕</button>` : ''}
+        </div>
+      `).join('');
+    }
+  }
+  const dir = document.getElementById('team-directory-list');
+  if (dir) {
+    const users = Object.values(teamRoles.users || {});
+    if (users.length === 0) {
+      dir.innerHTML = '<span>No other team members signed in yet.</span>';
+    } else {
+      dir.innerHTML = users.map(u => `
+        <div style="display:flex;align-items:center;justify-content:space-between;padding:4px 0;border-bottom:1px solid #0f3460">
+          <span><b>${escHtml(u.name || u.email)}</b> (${escHtml(u.email)})</span>
+          <span class="role-badge role-${u.role}">${escHtml(u.role)}</span>
+        </div>
+      `).join('');
+    }
+  }
+}
+
+// --- Init & Auth Listener ---
 appMode = 'home';
 document.getElementById('home-screen').classList.remove('hidden');
 document.getElementById('game-mode').classList.remove('active');
@@ -2979,6 +4059,23 @@ document.getElementById('practice-mode').classList.remove('active');
 document.getElementById('nav-buttons').classList.add('visible');
 document.getElementById('nav-close-btn').style.display = 'none';
 render(); updateTimerDisplay();
+
+// Load cached roles and hub
+try {
+  const cachedRoles = JSON.parse(localStorage.getItem('soccer-coach-roles'));
+  if (cachedRoles) teamRoles = Object.assign(teamRoles, cachedRoles);
+  const cachedHub = JSON.parse(localStorage.getItem('soccer-coach-teamhub'));
+  if (cachedHub) teamHub = Object.assign(teamHub, cachedHub);
+} catch(e) {}
+
+// Firebase Auth Observer
+auth.onAuthStateChanged(user => {
+  currentUser = user;
+  updateRoleFromAuth(user);
+});
+updateHeaderUI();
+setupFirebaseListeners();
+
 </script>
 </body>
 </html>
