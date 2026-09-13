@@ -386,6 +386,81 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 .auth-btn-google { background: #fff; color: #333; border: 1px solid #ddd; font-weight: 700; display: flex; align-items: center; gap: 5px; }
 .auth-btn-google:hover { background: #f1f1f1; }
 
+/* ========== LOGIN SCREEN ========== */
+#login-screen {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100vh - 44px);
+  min-height: calc(100dvh - 44px);
+  padding: 24px 16px;
+  background: #1a1a2e;
+  overflow-y: auto;
+}
+#login-screen.hidden { display: none; }
+.login-card {
+  width: 100%;
+  max-width: 440px;
+  background: #16213e;
+  border: 2px solid #0f3460;
+  border-radius: 20px;
+  padding: 32px 24px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+  box-shadow: 0 10px 35px rgba(0,0,0,.5);
+}
+.login-logo { font-size: 52px; margin-bottom: 8px; filter: drop-shadow(0 4px 12px rgba(0,0,0,.3)); }
+.login-title { font-size: 26px; font-weight: 900; color: #e94560; letter-spacing: 1px; }
+.login-subtitle { font-size: 13px; font-weight: 700; color: #3498db; margin-top: 2px; text-transform: uppercase; letter-spacing: .5px; }
+.login-desc { font-size: 13px; color: #cbd5e1; margin: 16px 0 22px; line-height: 1.5; }
+.login-btn-google {
+  width: 100%;
+  background: #fff;
+  color: #1f2937;
+  border: none;
+  border-radius: 12px;
+  padding: 13px 18px;
+  font-size: 15px;
+  font-weight: 700;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  box-shadow: 0 4px 14px rgba(0,0,0,.3);
+  transition: transform .1s, background .15s;
+}
+.login-btn-google:hover { background: #f8fafc; transform: translateY(-1px); }
+.login-btn-google:active { transform: scale(.98); }
+.login-roles-info {
+  width: 100%;
+  margin-top: 22px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255,255,255,.08);
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  text-align: left;
+}
+.login-role-item { display: flex; align-items: flex-start; gap: 10px; font-size: 12px; color: #94a3b8; }
+.login-role-item b { color: #fff; font-size: 13px; }
+.lri-icon { font-size: 22px; flex-shrink: 0; margin-top: 2px; }
+.login-guest-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 12px;
+  font-weight: 600;
+  margin-top: 20px;
+  cursor: pointer;
+  text-decoration: underline;
+  transition: color .15s;
+}
+.login-guest-btn:hover { color: #cbd5e1; }
+
 /* ========== PARENT PORTAL ========== */
 #parent-portal { display: none; flex-direction: column; width: 100vw; height: calc(100vh - 44px); height: calc(100dvh - 44px); background: #1a1a2e; overflow: hidden; }
 #parent-portal.active { display: flex; }
@@ -474,6 +549,35 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
       <button onclick="toggleFullscreen()" class="auth-btn" style="padding:4px 6px">⛶</button>
     </div>
   </header>
+
+  <!-- Login / Welcome Screen -->
+  <div id="login-screen">
+    <div class="login-card">
+      <div class="login-logo">⚽</div>
+      <div class="login-title">EMMA SOCCER</div>
+      <div class="login-subtitle">Team Hub & Coaching Platform</div>
+      
+      <p class="login-desc">Sign in with your Google account to access live game day lineups, the snack schedule, and team events.</p>
+
+      <button onclick="signInWithGoogle()" class="login-btn-google">
+        <svg width="20" height="20" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
+        Sign in with Google
+      </button>
+
+      <div class="login-roles-info">
+        <div class="login-role-item">
+          <span class="lri-icon">👑</span>
+          <div><b>Coaches</b><br><span>Live subs, timer, rotation plans, drills & admin.</span></div>
+        </div>
+        <div class="login-role-item">
+          <span class="lri-icon">👨‍👩‍👧</span>
+          <div><b>Parents</b><br><span>Live on-field positions, upcoming game info & snack sign-ups.</span></div>
+        </div>
+      </div>
+
+      <button onclick="continueAsGuest()" class="login-guest-btn">Continue as spectator without sign in →</button>
+    </div>
+  </div>
 
   <div id="home-screen">
     <div id="home-title">⚽ SOCCER COACH & TEAM HUB</div>
@@ -3520,10 +3624,18 @@ function signInWithGoogle() {
   });
 }
 
+let guestModeDismissed = false;
+
+function continueAsGuest() {
+  guestModeDismissed = true;
+  applyRoleRouting();
+}
+
 function signOutGoogle() {
   auth.signOut().then(() => {
     previewRole = null;
     currentUser = null;
+    guestModeDismissed = false;
     userRole = 'guest';
     updateHeaderUI();
     applyRoleRouting();
@@ -3546,11 +3658,27 @@ function setRolePreview(role) {
 
 function applyRoleRouting() {
   const role = getEffectiveRole();
+  const loginScreen = document.getElementById('login-screen');
   const homeScreen = document.getElementById('home-screen');
   const parentPortal = document.getElementById('parent-portal');
   const gameMode = document.getElementById('game-mode');
   const practiceMode = document.getElementById('practice-mode');
   const teamHubMode = document.getElementById('team-hub-mode');
+
+  // If not signed in and guest mode wasn't clicked, display Login Gate!
+  if (!currentUser && !guestModeDismissed) {
+    if (loginScreen) loginScreen.classList.remove('hidden');
+    if (homeScreen) homeScreen.classList.add('hidden');
+    if (parentPortal) parentPortal.classList.remove('active');
+    if (gameMode) gameMode.classList.remove('active');
+    if (practiceMode) practiceMode.classList.remove('active');
+    if (teamHubMode) teamHubMode.classList.remove('active');
+    appMode = 'login';
+    return;
+  }
+
+  // Hide login screen once user logs in or clicks guest
+  if (loginScreen) loginScreen.classList.add('hidden');
 
   if (role === 'parent' || role === 'guest') {
     homeScreen.classList.add('hidden');
@@ -3564,7 +3692,7 @@ function applyRoleRouting() {
     renderParentPortal();
   } else {
     parentPortal.classList.remove('active');
-    if (appMode === 'parent_portal') {
+    if (appMode === 'parent_portal' || appMode === 'login') {
       goHome();
     } else if (appMode === 'home') {
       homeScreen.classList.remove('hidden');
