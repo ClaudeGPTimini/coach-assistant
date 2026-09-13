@@ -564,6 +564,12 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
         Sign in with Google
       </button>
 
+      <div style="margin-top:10px;width:100%">
+        <button onclick="enterCoachPasscode()" class="auth-btn" style="width:100%;background:#0f3460;border:1px solid #1a5276;padding:9px 12px;font-size:13px;font-weight:700;color:#93c5fd;border-radius:10px;display:flex;align-items:center;justify-content:center;gap:8px">
+          <span>🔑</span> Coach PIN Access (Instant Bypass)
+        </button>
+      </div>
+
       <div class="login-roles-info">
         <div class="login-role-item">
           <span class="lri-icon">👑</span>
@@ -607,6 +613,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
   <!-- Parent Portal (Clean Spectator & Family Hub) -->
   <div id="parent-portal">
+    <div id="pp-guest-banner" style="display:none;background:#202b42;border-bottom:1px solid #0f3460;padding:8px 14px;align-items:center;justify-content:space-between;font-size:12px;color:#cbd5e1">
+      <div style="display:flex;align-items:center;gap:6px">
+        <span>👀</span>
+        <span>Viewing as <b>Guest Spectator</b></span>
+      </div>
+      <button onclick="returnToLoginScreen()" class="auth-btn" style="background:#e94560;color:#fff;font-size:11px;padding:5px 12px;font-weight:700;border-radius:6px">← Back to Sign In</button>
+    </div>
     <nav id="pp-tabs">
       <button class="pp-tab-btn active" id="pp-btn-field" onclick="switchParentTab('field')">⚽ Live Field</button>
       <button class="pp-tab-btn" id="pp-btn-hub" onclick="switchParentTab('hub')">📅 What's Happening</button>
@@ -879,6 +892,13 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
 
       <h3 style="margin-top:18px">Team Directory (Signed-In Users)</h3>
       <div id="team-directory-list" style="font-size:12px;color:#bbb"></div>
+
+      <h3 style="margin-top:18px">Coach Access PIN</h3>
+      <div style="font-size:12px;color:#aaa;margin-bottom:6px">PIN for direct offline or emergency Head Coach access:</div>
+      <div style="display:flex;gap:6px;max-width:240px">
+        <input type="text" id="coach-pin-input" value="3190" maxlength="8" style="flex:1;background:#0f1a30;border:1px solid #0f3460;color:#fff;border-radius:5px;padding:6px 8px;font-size:12px">
+        <button class="gp-btn gp-save" onclick="saveCoachPin()" style="margin:0;padding:6px 12px">Update PIN</button>
+      </div>
     </div>
     <br>
     <button id="close-settings" onclick="closeSettings()">Save & Close</button>
@@ -914,6 +934,37 @@ body { font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; b
     <input type="text" id="save-swap-name" placeholder="e.g. O↔D">
     <button id="save-swap-confirm" onclick="confirmSaveSwap()">Save</button>
     <button id="save-swap-cancel" onclick="closeSaveSwap()">Cancel</button>
+  </div>
+</div>
+
+<!-- Auth Diagnostic & Help Modal -->
+<div id="auth-modal-overlay" style="display:none;position:fixed;top:0;left:0;width:100vw;height:100vh;background:rgba(0,0,0,.8);z-index:9999;justify-content:center;align-items:center;padding:16px">
+  <div style="background:#16213e;border:2px solid #e94560;border-radius:14px;max-width:480px;width:100%;padding:22px 20px;color:#fff;box-shadow:0 12px 40px rgba(0,0,0,.6)">
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+      <span style="font-size:24px">⚠️</span>
+      <h3 id="auth-modal-title" style="margin:0;font-size:17px;font-weight:800;color:#e94560">Sign-In Configuration Needed</h3>
+    </div>
+    <p id="auth-modal-msg" style="font-size:13px;line-height:1.5;color:#cbd5e1;margin-bottom:14px"></p>
+    
+    <div id="auth-modal-steps" style="background:#0f1d38;border:1px solid #1a3360;border-radius:8px;padding:12px;margin-bottom:16px;font-size:12px;line-height:1.6;color:#94a3b8">
+    </div>
+
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <a id="auth-modal-link" href="#" target="_blank" class="auth-btn" style="background:#4285F4;color:#fff;text-align:center;padding:10px;font-weight:700;text-decoration:none;border-radius:8px;display:none">
+        🔗 Open Firebase Console
+      </a>
+      <div style="display:flex;gap:8px">
+        <button onclick="enterCoachPasscode(); closeAuthModal();" class="auth-btn" style="flex:1;background:#27ae60;color:#fff;padding:9px;font-weight:700;border-radius:8px">
+          🔑 Use Coach PIN (Instant Access)
+        </button>
+        <button onclick="signInWithGoogle(true); closeAuthModal();" class="auth-btn" style="flex:1;background:#3498db;color:#fff;padding:9px;font-weight:700;border-radius:8px">
+          Try Redirect Mode
+        </button>
+      </div>
+      <button onclick="closeAuthModal()" class="auth-btn" style="background:#334155;color:#cbd5e1;padding:8px;font-weight:600;border-radius:8px;margin-top:4px">
+        Close
+      </button>
+    </div>
   </div>
 </div>
 
@@ -2619,6 +2670,11 @@ function goHome() {
   document.getElementById('practice-mode').classList.remove('active');
   document.getElementById('team-hub-mode').classList.remove('active');
 
+  if (!currentUser && !guestModeDismissed) {
+    applyRoleRouting();
+    return;
+  }
+
   const role = getEffectiveRole();
   if (role === 'parent' || role === 'guest') {
     document.getElementById('home-screen').classList.add('hidden');
@@ -3603,7 +3659,7 @@ function updateHeaderUI() {
       `;
     } else {
       userChip.innerHTML = `
-        <button onclick="signInWithGoogle()" class="auth-btn auth-btn-google">
+        <button onclick="returnToLoginScreen()" class="auth-btn auth-btn-google" title="Sign In or Switch Account">
           <svg width="14" height="14" viewBox="0 0 24 24"><path fill="#4285F4" d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z"/><path fill="#34A853" d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z"/><path fill="#FBBC05" d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.06H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.94l2.85-2.22.81-.63z"/><path fill="#EA4335" d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.06l3.66 2.84c.87-2.6 3.3-4.52 6.16-4.52z"/></svg>
           Sign In
         </button>
@@ -3612,16 +3668,125 @@ function updateHeaderUI() {
   }
 }
 
-function signInWithGoogle() {
+function signInWithGoogle(preferRedirect = false) {
   const provider = new firebase.auth.GoogleAuthProvider();
-  auth.signInWithPopup(provider).catch(err => {
-    console.warn('Popup signin error, trying redirect:', err);
-    if (err.code === 'auth/popup-blocked' || err.code === 'auth/popup-closed-by-user') {
-      auth.signInWithRedirect(provider);
-    } else {
-      alert('Sign-In Note: ' + err.message + '\n\nReminder: Enable Google Sign-In under Firebase Console > Authentication > Sign-in method.');
-    }
-  });
+  provider.addScope('profile');
+  provider.addScope('email');
+
+  if (preferRedirect) {
+    auth.signInWithRedirect(provider).catch(err => {
+      console.error('Redirect sign-in error:', err);
+      showAuthErrorModal(err);
+    });
+    return;
+  }
+
+  auth.signInWithPopup(provider)
+    .then(result => {
+      if (result && result.user) {
+        currentUser = result.user;
+        guestModeDismissed = true;
+        updateRoleFromAuth(result.user);
+      }
+    })
+    .catch(err => {
+      console.error('Google Sign-In Error:', err);
+      showAuthErrorModal(err);
+    });
+}
+
+function closeAuthModal() {
+  const overlay = document.getElementById('auth-modal-overlay');
+  if (overlay) overlay.style.display = 'none';
+}
+
+function showAuthErrorModal(err) {
+  const overlay = document.getElementById('auth-modal-overlay');
+  const title = document.getElementById('auth-modal-title');
+  const msg = document.getElementById('auth-modal-msg');
+  const steps = document.getElementById('auth-modal-steps');
+  const link = document.getElementById('auth-modal-link');
+  if (!overlay) {
+    alert('Sign-In Error: ' + ((err && (err.message || err.code)) || err));
+    return;
+  }
+
+  const code = (err && err.code) || '';
+  const message = (err && err.message) || '';
+
+  if (code === 'auth/unauthorized-domain') {
+    title.textContent = 'Firebase Domain Authorization Needed';
+    msg.innerHTML = `Firebase Authentication blocked sign-in because <b>claudegptimini.github.io</b> is not yet in your Firebase Authorized Domains list.`;
+    steps.innerHTML = `
+      <b style="color:#fff">One-time setup (takes 30 seconds):</b><br>
+      1. Click <b>Open Firebase Console</b> below.<br>
+      2. Under <b>Authorized domains</b>, click <b>Add domain</b>.<br>
+      3. Enter: <code style="background:#000;padding:2px 5px;border-radius:4px;color:#f1c40f">claudegptimini.github.io</code> and click <b>Save</b>.<br>
+      4. Come back and click <b>Sign in with Google</b>!
+    `;
+    link.href = 'https://console.firebase.google.com/project/coach-assistant-b367d/authentication/settings';
+    link.textContent = '🔗 Open Firebase Authorized Domains Settings';
+    link.style.display = 'block';
+  } else if (code === 'auth/operation-not-allowed' || code === 'auth/configuration-not-found') {
+    title.textContent = 'Enable Google Sign-In in Firebase';
+    msg.innerHTML = `Google Sign-In provider is not enabled yet for project <b>coach-assistant-b367d</b>.`;
+    steps.innerHTML = `
+      <b style="color:#fff">One-time setup:</b><br>
+      1. Click <b>Open Firebase Console</b> below.<br>
+      2. Click on <b>Google</b> in the Sign-in providers list.<br>
+      3. Toggle <b>Enable</b> to ON.<br>
+      4. Select support email (<b>rmagee3190@gmail.com</b>) and click <b>Save</b>.
+    `;
+    link.href = 'https://console.firebase.google.com/project/coach-assistant-b367d/authentication/providers';
+    link.textContent = '🔗 Open Firebase Sign-In Providers';
+    link.style.display = 'block';
+  } else if (code === 'auth/popup-closed-by-user') {
+    title.textContent = 'Sign-In Window Closed';
+    msg.innerHTML = `The Google sign-in window closed before signing in. If the window disappeared automatically, Firebase likely needs the authorized domain or Google provider enabled.`;
+    steps.innerHTML = `
+      • Click <b>Use Coach PIN (Instant Access)</b> below to access Head Coach tools right now (Default: 3190).<br>
+      • Or try <b>Redirect Mode</b> which opens the Google login page directly in the current window.
+    `;
+    link.href = 'https://console.firebase.google.com/project/coach-assistant-b367d/authentication/settings';
+    link.textContent = '🔗 Check Firebase Authorized Domains';
+    link.style.display = 'block';
+  } else {
+    title.textContent = 'Sign-In Notice';
+    msg.textContent = message || ('Firebase error: ' + code);
+    steps.innerHTML = `Error details: <code>${escHtml(code)}</code><br>You can bypass with Coach PIN (3190) or try Redirect mode.`;
+    link.style.display = 'none';
+  }
+
+  overlay.style.display = 'flex';
+}
+
+function enterCoachPasscode() {
+  const configuredPin = localStorage.getItem('soccer-coach-pin') || '3190';
+  const pin = prompt('Enter Coach Access PIN (Default: ' + configuredPin + '):');
+  if (pin === null) return;
+  if (pin.trim() === configuredPin.trim()) {
+    sessionStorage.setItem('soccer-coach-local-auth', 'head_coach');
+    currentUser = {
+      displayName: 'Coach Rodney',
+      email: 'rmagee3190@gmail.com',
+      photoURL: ''
+    };
+    guestModeDismissed = true;
+    userRole = 'head_coach';
+    updateHeaderUI();
+    applyRoleRouting();
+    goHome();
+  } else {
+    alert('Incorrect PIN. Default is ' + configuredPin + '. You can update this in Settings > Team & Roles.');
+  }
+}
+
+function saveCoachPin() {
+  const input = document.getElementById('coach-pin-input');
+  if (input && input.value.trim()) {
+    localStorage.setItem('soccer-coach-pin', input.value.trim());
+    alert('Coach PIN updated to: ' + input.value.trim());
+  }
 }
 
 let guestModeDismissed = false;
@@ -3631,8 +3796,27 @@ function continueAsGuest() {
   applyRoleRouting();
 }
 
+function returnToLoginScreen() {
+  guestModeDismissed = false;
+  if (sessionStorage.getItem('soccer-coach-local-auth')) {
+    sessionStorage.removeItem('soccer-coach-local-auth');
+    currentUser = null;
+    userRole = 'guest';
+  }
+  updateHeaderUI();
+  applyRoleRouting();
+}
+
 function signOutGoogle() {
+  sessionStorage.removeItem('soccer-coach-local-auth');
   auth.signOut().then(() => {
+    previewRole = null;
+    currentUser = null;
+    guestModeDismissed = false;
+    userRole = 'guest';
+    updateHeaderUI();
+    applyRoleRouting();
+  }).catch(() => {
     previewRole = null;
     currentUser = null;
     guestModeDismissed = false;
@@ -3664,6 +3848,7 @@ function applyRoleRouting() {
   const gameMode = document.getElementById('game-mode');
   const practiceMode = document.getElementById('practice-mode');
   const teamHubMode = document.getElementById('team-hub-mode');
+  const guestBanner = document.getElementById('pp-guest-banner');
 
   // If not signed in and guest mode wasn't clicked, display Login Gate!
   if (!currentUser && !guestModeDismissed) {
@@ -3689,8 +3874,14 @@ function applyRoleRouting() {
     document.getElementById('nav-buttons').classList.add('visible');
     document.getElementById('nav-close-btn').style.display = 'none';
     appMode = 'parent_portal';
+
+    if (guestBanner) {
+      guestBanner.style.display = (!currentUser) ? 'flex' : 'none';
+    }
+
     renderParentPortal();
   } else {
+    if (guestBanner) guestBanner.style.display = 'none';
     parentPortal.classList.remove('active');
     if (appMode === 'parent_portal' || appMode === 'login') {
       goHome();
@@ -4177,6 +4368,11 @@ function renderRolesAdminUI() {
       `).join('');
     }
   }
+  const pinInput = document.getElementById('coach-pin-input');
+  if (pinInput) {
+    pinInput.value = localStorage.getItem('soccer-coach-pin') || '3190';
+    pinInput.disabled = (userRole !== 'head_coach');
+  }
 }
 
 // --- Init & Auth Listener ---
@@ -4196,13 +4392,59 @@ try {
   if (cachedHub) teamHub = Object.assign(teamHub, cachedHub);
 } catch(e) {}
 
+// Check local coach session
+try {
+  const localAuth = sessionStorage.getItem('soccer-coach-local-auth');
+  if (localAuth === 'head_coach' && !currentUser) {
+    currentUser = {
+      displayName: 'Coach Rodney',
+      email: 'rmagee3190@gmail.com',
+      photoURL: ''
+    };
+    guestModeDismissed = true;
+    userRole = 'head_coach';
+  }
+} catch(e) {}
+
+// Check redirect result from Google OAuth
+auth.getRedirectResult().then(result => {
+  if (result && result.user) {
+    currentUser = result.user;
+    guestModeDismissed = true;
+    updateRoleFromAuth(result.user);
+  }
+}).catch(err => {
+  console.error('Redirect sign-in error on startup:', err);
+  showAuthErrorModal(err);
+});
+
 // Firebase Auth Observer
 auth.onAuthStateChanged(user => {
-  currentUser = user;
-  updateRoleFromAuth(user);
+  if (user) {
+    currentUser = user;
+    sessionStorage.removeItem('soccer-coach-local-auth');
+    updateRoleFromAuth(user);
+  } else {
+    // If not signed in via Google, but has local coach auth
+    if (sessionStorage.getItem('soccer-coach-local-auth') === 'head_coach') {
+      currentUser = {
+        displayName: 'Coach Rodney',
+        email: 'rmagee3190@gmail.com',
+        photoURL: ''
+      };
+      guestModeDismissed = true;
+      userRole = 'head_coach';
+      updateHeaderUI();
+      applyRoleRouting();
+    } else {
+      currentUser = null;
+      updateRoleFromAuth(null);
+    }
+  }
 });
 updateHeaderUI();
 setupFirebaseListeners();
+applyRoleRouting();
 
 </script>
 </body>
